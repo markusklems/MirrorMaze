@@ -8,5 +8,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("greet")
 public interface GreetingService extends RemoteService {
-	String greetServer(String name) throws IllegalArgumentException;
+	void saveAmi(String repository, String imageId,
+			String imageLocation, String imageOwnerAlias, String ownerId,
+			String name, String description, String architecture,
+			String platform, String imageType) throws IllegalArgumentException;
 }
