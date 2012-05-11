@@ -15,7 +15,7 @@ gwt-unitCache/
 # more caches and things from deploy #
 war/mirrormaze
 war/WEB-INF/deploy/
-war/WEB-INF/classes/.settings
+war/WEB-INF/classes/
 
 # Eclipse stuff #
 .settings
