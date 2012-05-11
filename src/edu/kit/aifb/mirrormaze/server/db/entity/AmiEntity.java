@@ -1,17 +1,24 @@
 package edu.kit.aifb.mirrormaze.server.db.entity;
 
 import javax.jdo.annotations.Extension;
+import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
+import javax.jdo.annotations.PrimaryKey;
 
 import edu.kit.aifb.mirrormaze.server.db.model.AmiModel;
 
 @PersistenceCapable(table = "AMI")
 public class AmiEntity implements AmiModel {
 
-	@Persistent
-	@Extension(vendorName = "datanucleus", key = "gae.pk-id", value = "true")
-	private Long keyId;
+	@PrimaryKey
+    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+    @Extension(vendorName="datanucleus", key="gae.encoded-pk", value="true")
+    private String encodedKey;
+
+    @Persistent
+    @Extension(vendorName="datanucleus", key="gae.pk-name", value="true")
+    private String keyName;
 
 	// attributes
 	@Persistent
@@ -52,13 +59,25 @@ public class AmiEntity implements AmiModel {
 		this.imageType = imageType;
 	}
 
-	public Long getKeyId() {
-		return keyId;
+
+
+	public String getKeyName() {
+		return keyName;
 	}
 
-	public void setKeyId(Long keyId) {
-		this.keyId = keyId;
+
+
+	public void setKeyName(String keyName) {
+		this.keyName = keyName;
 	}
+
+
+
+	public String getEncodedKey() {
+		return encodedKey;
+	}
+
+
 
 	public String getRepository() {
 		return repository;

@@ -15,7 +15,7 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,
 			String platform, String imageType) throws IllegalArgumentException {
-		
+		AmiManager.saveAmi(repository, imageId, imageLocation, imageOwnerAlias, ownerId, name, description, architecture, platform, imageType);
 	}
 
 
