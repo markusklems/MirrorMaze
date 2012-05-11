@@ -34,7 +34,7 @@ xmlns="http://java.sun.com/xml/ns/javaee">
 			<url-pattern>/remote_api</url-pattern>
 		</web-resource-collection>
 		<auth-constraint>
-			<role-name>*</role-name>
+			<role-name>admin</role-name>
 		</auth-constraint>
 	</security-constraint>
 
