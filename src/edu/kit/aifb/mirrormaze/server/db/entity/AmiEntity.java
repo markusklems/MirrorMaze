@@ -8,7 +8,7 @@ import javax.jdo.annotations.PrimaryKey;
 
 import edu.kit.aifb.mirrormaze.server.db.model.AmiModel;
 
-@PersistenceCapable(table = "AMI")
+@PersistenceCapable(table = "AmiEntity")
 public class AmiEntity implements AmiModel {
 
 	@PrimaryKey
@@ -58,8 +58,6 @@ public class AmiEntity implements AmiModel {
 		this.platform = platform;
 		this.imageType = imageType;
 	}
-
-
 
 	public String getKeyName() {
 		return keyName;
