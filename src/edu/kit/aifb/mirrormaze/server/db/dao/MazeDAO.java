@@ -6,7 +6,7 @@ package edu.kit.aifb.mirrormaze.server.db.dao;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.util.DAOBase;
 
-import edu.kit.aifb.mirrormaze.server.db.model.Ami;
+import edu.kit.aifb.mirrormaze.client.model.Ami;
 
 /**
  * @author mugglmenzel

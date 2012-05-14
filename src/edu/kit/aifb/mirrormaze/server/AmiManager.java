@@ -15,16 +15,17 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.gson.Gson;
+import com.googlecode.objectify.Query;
 
+import edu.kit.aifb.mirrormaze.client.model.Ami;
 import edu.kit.aifb.mirrormaze.server.db.dao.MazeDAO;
-import edu.kit.aifb.mirrormaze.server.db.model.Ami;
 
 public class AmiManager {
 
 	private static Logger log = Logger.getLogger(AmiManager.class.getName());
 
 	private static MazeDAO dao = new MazeDAO();
-	
+
 	public static boolean saveAmi(String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,
@@ -32,9 +33,9 @@ public class AmiManager {
 		if (repository != null && imageId != null) {
 			// Check for duplicate AMIs? TODO
 
-			if (dao.getOrCreateAmiFull("", repository, imageId,
-					imageLocation, imageOwnerAlias, ownerId, name, description,
-					architecture, platform, imageType) != null) {
+			if (dao.getOrCreateAmiFull("", repository, imageId, imageLocation,
+					imageOwnerAlias, ownerId, name, description, architecture,
+					platform, imageType) != null) {
 				return true;
 			}
 		} else {
@@ -42,6 +43,12 @@ public class AmiManager {
 		}
 		return false;
 
+	}
+
+	public static List<Ami> getAmis() {
+		Query<Ami> amisQuery = dao.ofy().query(Ami.class);
+
+		return amisQuery.list();
 	}
 
 	public static boolean importJSONFromS3(String S3Bucket) {
@@ -64,8 +71,9 @@ public class AmiManager {
 					for (S3ObjectSummary s3JSON : jsonFiles) {
 						S3Object jsonFile = s3.getObject(new GetObjectRequest(
 								S3Bucket, s3JSON.getKey()));
-						Ami test = gson.fromJson(new InputStreamReader(
-								jsonFile.getObjectContent()), Ami.class);
+						Ami test = gson.fromJson(
+								new InputStreamReader(jsonFile
+										.getObjectContent()), Ami.class);
 						System.out.println(test);
 					}
 
@@ -91,4 +99,5 @@ public class AmiManager {
 
 		return true;
 	}
+
 }

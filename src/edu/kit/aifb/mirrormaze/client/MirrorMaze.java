@@ -1,36 +1,21 @@
 package edu.kit.aifb.mirrormaze.client;
 
-import gwtupload.client.IUploadStatus.Status;
-import gwtupload.client.IUploader;
-import gwtupload.client.IUploader.OnFinishUploaderHandler;
-import gwtupload.client.IUploader.UploadedInfo;
-import gwtupload.client.MultiUploader;
-
-import org.swfupload.client.SWFUpload;
-import org.swfupload.client.SWFUpload.ButtonAction;
-import org.swfupload.client.UploadBuilder;
+import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.ClickListener;
-import com.google.gwt.user.client.ui.RootPanel;
-import com.smartgwt.client.types.Encoding;
-import com.smartgwt.client.types.FormMethod;
-import com.smartgwt.client.util.SC;
-import com.smartgwt.client.widgets.IButton;
-import com.smartgwt.client.widgets.Label;
-import com.smartgwt.client.widgets.events.ClickEvent;
-import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.TextItem;
-import com.smartgwt.client.widgets.form.fields.UploadItem;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressEvent;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressHandler;
+import com.smartgwt.client.widgets.grid.ListGrid;
+import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.layout.Layout;
 import com.smartgwt.client.widgets.layout.VLayout;
+
+import edu.kit.aifb.mirrormaze.client.datasources.AmisDataSource;
+import edu.kit.aifb.mirrormaze.client.model.Ami;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -50,6 +35,12 @@ public class MirrorMaze implements EntryPoint {
 	 */
 	private final MirrorMazeServiceAsync mirrorMazeService = GWT
 			.create(MirrorMazeService.class);
+	
+	
+	/**
+	 * Data sources
+	 */
+	private final AmisDataSource amisDataSource = new AmisDataSource();
 
 	/**
 	 * This is the entry point method.
@@ -84,6 +75,31 @@ public class MirrorMaze implements EntryPoint {
 		});
 		s3bucket.setItems(s3bucketName);
 		masterLayout.addMember(s3bucket);
+		
+		final ListGrid amis = new ListGrid();
+		amis.setWidth100();
+		amis.setHeight100();
+		ListGridField id = new ListGridField("id", "AMI-ID");
+		ListGridField name = new ListGridField("name", "Name");
+		amis.setFields(id, name);
+		amis.setCanResizeFields(true);
+		
+		masterLayout.addMember(amis);
+		mirrorMazeService.getAmis(new AsyncCallback<List<Ami>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onSuccess(List<Ami> result) {
+				amisDataSource.setAmis(result);
+				amis.setData(amisDataSource.createListGridRecords());
+			}
+		
+		});
 		
 		//masterLayout.addMember(new UploadTestsView().getContent());
 		

@@ -1,9 +1,18 @@
-package edu.kit.aifb.mirrormaze.server.db.model;
+package edu.kit.aifb.mirrormaze.client.model;
+
+import java.io.Serializable;
 
 import javax.persistence.Id;
 
-public class Ami {
+public class Ami implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2525689513157353594L;
+
+	
+	
 	@Id
 	private String id;
 	

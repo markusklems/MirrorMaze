@@ -1,8 +1,11 @@
 package edu.kit.aifb.mirrormaze.server;
 
+import java.util.List;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import edu.kit.aifb.mirrormaze.client.MirrorMazeService;
+import edu.kit.aifb.mirrormaze.client.model.Ami;
 
 @SuppressWarnings("serial")
 public class MirrorMazeServiceImpl extends RemoteServiceServlet implements
@@ -20,6 +23,11 @@ public class MirrorMazeServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public boolean importJSONFromS3(String S3Bucket) {
 		return AmiManager.importJSONFromS3(S3Bucket);
+	}
+
+	@Override
+	public List<Ami> getAmis() {
+		return AmiManager.getAmis();
 	}
 
 }
