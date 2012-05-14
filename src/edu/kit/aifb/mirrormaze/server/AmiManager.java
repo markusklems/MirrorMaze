@@ -1,43 +1,30 @@
 package edu.kit.aifb.mirrormaze.server;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
-import java.math.BigInteger;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
-
-import org.apache.xml.serialize.OutputFormat;
-import org.apache.xml.serialize.XMLSerializer;
-import org.w3c.dom.Element;
 
 import com.amazonaws.auth.PropertiesCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.gson.Gson;
 
-import edu.kit.aifb.mirrormaze.server.db.dao.DaoFactory;
-import edu.kit.aifb.mirrormaze.server.db.model.AmiModel;
+import edu.kit.aifb.mirrormaze.server.db.dao.MazeDAO;
+import edu.kit.aifb.mirrormaze.server.db.model.Ami;
 
 public class AmiManager {
 
 	private static Logger log = Logger.getLogger(AmiManager.class.getName());
 
+	private static MazeDAO dao = new MazeDAO();
+	
 	public static boolean saveAmi(String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,
@@ -45,7 +32,7 @@ public class AmiManager {
 		if (repository != null && imageId != null) {
 			// Check for duplicate AMIs? TODO
 
-			if (DaoFactory.getAmiDao().create(repository, imageId,
+			if (dao.getOrCreateAmiFull("", repository, imageId,
 					imageLocation, imageOwnerAlias, ownerId, name, description,
 					architecture, platform, imageType) != null) {
 				return true;
@@ -77,8 +64,8 @@ public class AmiManager {
 					for (S3ObjectSummary s3JSON : jsonFiles) {
 						S3Object jsonFile = s3.getObject(new GetObjectRequest(
 								S3Bucket, s3JSON.getKey()));
-						AmiModel test = gson.fromJson(new InputStreamReader(
-								jsonFile.getObjectContent()), AmiModel.class);
+						Ami test = gson.fromJson(new InputStreamReader(
+								jsonFile.getObjectContent()), Ami.class);
 						System.out.println(test);
 					}
 

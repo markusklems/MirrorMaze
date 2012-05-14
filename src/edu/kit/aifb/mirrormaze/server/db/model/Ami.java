@@ -1,52 +1,63 @@
-package edu.kit.aifb.mirrormaze.server.db.entity;
+package edu.kit.aifb.mirrormaze.server.db.model;
 
-import javax.jdo.annotations.Extension;
-import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
+import javax.persistence.Id;
 
-import edu.kit.aifb.mirrormaze.server.db.model.AmiModel;
+public class Ami {
 
-@PersistenceCapable(table = "AmiEntity")
-public class AmiEntity implements AmiModel {
-
-	@PrimaryKey
-    @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-    @Extension(vendorName="datanucleus", key="gae.encoded-pk", value="true")
-    private String encodedKey;
-
-    @Persistent
-    @Extension(vendorName="datanucleus", key="gae.pk-name", value="true")
-    private String keyName;
-
-	// attributes
-	@Persistent
+	@Id
+	private String id;
+	
 	private String repository;
-	@Persistent
-	private String imageId;
-	@Persistent
-	private String imageLocation;
-	@Persistent
-	private String imageOwnerAlias;
-	@Persistent
-	private String ownerId;
-	@Persistent
-	private String name;
-	@Persistent
-	private String description;
-	@Persistent
-	private String architecture;
-	@Persistent
-	private String platform;
-	@Persistent
-	private String imageType;
 
-	public AmiEntity(String repository, String imageId, String imageLocation,
-			String imageOwnerAlias, String ownerId, String name,
-			String description, String architecture, String platform,
-			String imageType) {
-		// super();
+	private String imageId;
+
+	private String imageLocation;
+
+	private String imageOwnerAlias;
+
+	private String ownerId;
+
+	private String name;
+
+	private String description;
+
+	private String architecture;
+
+	private String platform;
+
+	private String imageType;
+	
+	
+	/**
+	 * @param id
+	 */
+	public Ami(String id) {
+		super();
+		this.id = id;
+	}
+	
+	
+	
+
+	/**
+	 * @param id
+	 * @param repository
+	 * @param imageId
+	 * @param imageLocation
+	 * @param imageOwnerAlias
+	 * @param ownerId
+	 * @param name
+	 * @param description
+	 * @param architecture
+	 * @param platform
+	 * @param imageType
+	 */
+	public Ami(String id, String repository, String imageId,
+			String imageLocation, String imageOwnerAlias, String ownerId,
+			String name, String description, String architecture,
+			String platform, String imageType) {
+		super();
+		this.id = id;
 		this.repository = repository;
 		this.imageId = imageId;
 		this.imageLocation = imageLocation;
@@ -59,21 +70,6 @@ public class AmiEntity implements AmiModel {
 		this.imageType = imageType;
 	}
 
-	public String getKeyName() {
-		return keyName;
-	}
-
-
-
-	public void setKeyName(String keyName) {
-		this.keyName = keyName;
-	}
-
-
-
-	public String getEncodedKey() {
-		return encodedKey;
-	}
 
 
 
@@ -156,5 +152,6 @@ public class AmiEntity implements AmiModel {
 	public void setImageType(String imageType) {
 		this.imageType = imageType;
 	}
+
 
 }
