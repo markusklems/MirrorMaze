@@ -1,5 +1,6 @@
 package edu.kit.aifb.mirrormaze.client;
 
+import java.util.Date;
 import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -35,8 +36,7 @@ public class MirrorMaze implements EntryPoint {
 	 */
 	private final MirrorMazeServiceAsync mirrorMazeService = GWT
 			.create(MirrorMazeService.class);
-	
-	
+
 	/**
 	 * Data sources
 	 */
@@ -52,45 +52,48 @@ public class MirrorMaze implements EntryPoint {
 		masterLayout.setHeight100();
 
 		DynamicForm s3bucket = new DynamicForm();
-		
-		final TextItem s3bucketName = new TextItem("s3bucketName", "S3 Bucket Name");
+
+		final TextItem s3bucketName = new TextItem("s3bucketName",
+				"S3 Bucket Name");
 		s3bucketName.addKeyPressHandler(new KeyPressHandler() {
-			
+
 			@Override
 			public void onKeyPress(KeyPressEvent event) {
-				if(event.getKeyName().equals("Enter"))
-					mirrorMazeService.importJSONFromS3(s3bucketName.getDisplayValue(), new AsyncCallback<Boolean>() {
-						
-						@Override
-						public void onSuccess(Boolean result) {
-							System.out.println("import success.");
-						}
-						
-						@Override
-						public void onFailure(Throwable caught) {
-							System.out.println("import failed.");
-						}
-					});
+				if (event.getKeyName().equals("Enter"))
+					mirrorMazeService.importJSONFromS3(
+							s3bucketName.getDisplayValue(),
+							new AsyncCallback<Boolean>() {
+
+								@Override
+								public void onSuccess(Boolean result) {
+									System.out.println("import success.");
+								}
+
+								@Override
+								public void onFailure(Throwable caught) {
+									System.out.println("import failed.");
+								}
+							});
 			}
 		});
 		s3bucket.setItems(s3bucketName);
 		masterLayout.addMember(s3bucket);
-		
+
 		final ListGrid amis = new ListGrid();
 		amis.setWidth100();
 		amis.setHeight100();
-		ListGridField id = new ListGridField("id", "AMI-ID");
+		ListGridField id = new ListGridField("id", "AMI Id");
 		ListGridField name = new ListGridField("name", "Name");
 		amis.setFields(id, name);
 		amis.setCanResizeFields(true);
-		
+
 		masterLayout.addMember(amis);
 		mirrorMazeService.getAmis(new AsyncCallback<List<Ami>>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
@@ -98,11 +101,59 @@ public class MirrorMaze implements EntryPoint {
 				amisDataSource.setAmis(result);
 				amis.setData(amisDataSource.createListGridRecords());
 			}
-		
+
 		});
-		
-		//masterLayout.addMember(new UploadTestsView().getContent());
-		
+
+		DynamicForm addAmi = new DynamicForm();
+
+		final TextItem addAmiId = new TextItem("addAmiId", "Ami Id");
+		addAmiId.addKeyPressHandler(new KeyPressHandler() {
+
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				if (event.getKeyName().equals("Enter"))
+					mirrorMazeService.saveAmi(null, addAmiId.getDisplayValue(),
+							"", "", "", "Test AMI (" + new Date().getTime()
+									+ ")", "", "", "", "",
+							new AsyncCallback<Void>() {
+
+								@Override
+								public void onSuccess(Void result) {
+
+									System.out.println("Create AMI success.");
+
+									mirrorMazeService
+											.getAmis(new AsyncCallback<List<Ami>>() {
+
+												@Override
+												public void onFailure(
+														Throwable caught) {
+												}
+
+												@Override
+												public void onSuccess(
+														List<Ami> result) {
+													amisDataSource
+															.setAmis(result);
+													amis.setData(amisDataSource
+															.createListGridRecords());
+												}
+
+											});
+								}
+
+								@Override
+								public void onFailure(Throwable caught) {
+									System.out.println("Create AMI failed.");
+								}
+							});
+			}
+		});
+		addAmi.setItems(addAmiId);
+		masterLayout.addMember(addAmi);
+
+		// masterLayout.addMember(new UploadTestsView().getContent());
+
 		masterLayout.draw();
 	}
 }

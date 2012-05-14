@@ -3,6 +3,7 @@
  */
 package edu.kit.aifb.mirrormaze.server.db.dao;
 
+import com.googlecode.objectify.ObjectifyOpts;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.util.DAOBase;
 
@@ -15,27 +16,47 @@ import edu.kit.aifb.mirrormaze.client.model.Ami;
 public class MazeDAO extends DAOBase {
 	static {
 		ObjectifyService.register(Ami.class);
-
 	}
 
-	public Ami getOrCreateAmi(String id) {
-		Ami found = ofy().find(Ami.class, id);
-		if (found == null)
-			return new Ami(id);
-		else
+	/**
+	 * 
+	 */
+	public MazeDAO() {
+		super();
+	}
+
+	/**
+	 * @param opts
+	 */
+	public MazeDAO(ObjectifyOpts opts) {
+		super(opts);
+	}
+
+	public Ami getOrCreateAmi(Long id) {
+		Ami found = id != null ? ofy().find(Ami.class, id) : null;
+		if (found == null) {
+			Ami ami = new Ami(id);
+			ofy().put(ami);
+			System.out.println("DAO saved " + ami + " with " + ami.getId());
+			return ami;
+		} else
 			return found;
 	}
 
-	public Ami getOrCreateAmiFull(String id, String repository, String imageId,
+	public Ami getOrCreateAmiFull(Long id, String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,
 			String platform, String imageType) {
-		Ami found = ofy().find(Ami.class, id);
-		if (found == null)
-			return new Ami(id, repository, imageId, imageLocation,
+		System.out.println("ofy is " + ofy());
+		Ami found = id != null ? ofy().find(Ami.class, id) : null;
+		if (found == null) {
+			Ami ami = new Ami(id, repository, imageId, imageLocation,
 					imageOwnerAlias, ownerId, name, description, architecture,
 					platform, imageType);
-		else
+			ofy().put(ami);
+			System.out.println("DAO saved " + ami + " with " + ami.getId());
+			return ami;
+		} else
 			return found;
 	}
 }

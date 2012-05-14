@@ -30,19 +30,17 @@ public class AmiManager {
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,
 			String platform, String imageType) {
-		if (repository != null && imageId != null) {
-			// Check for duplicate AMIs? TODO
 
-			if (dao.getOrCreateAmiFull("", repository, imageId, imageLocation,
-					imageOwnerAlias, ownerId, name, description, architecture,
-					platform, imageType) != null) {
-				return true;
-			}
-		} else {
+		// Check for duplicate AMIs? TODO
+		Ami newAmi = dao.getOrCreateAmiFull(null, repository, imageId,
+				imageLocation, imageOwnerAlias, ownerId, name, description,
+				architecture, platform, imageType);
+		System.out.println("Manager saved " + newAmi + " with "
+				+ newAmi.getId());
+		if (newAmi != null && newAmi.getId() != null)
+			return true;
+		else
 			return false;
-		}
-		return false;
-
 	}
 
 	public static List<Ami> getAmis() {

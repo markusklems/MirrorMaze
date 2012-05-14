@@ -11,11 +11,9 @@ public class Ami implements Serializable {
 	 */
 	private static final long serialVersionUID = -2525689513157353594L;
 
-	
-	
 	@Id
-	private String id;
-	
+	private Long id;
+
 	private String repository;
 
 	private String imageId;
@@ -35,18 +33,21 @@ public class Ami implements Serializable {
 	private String platform;
 
 	private String imageType;
-	
-	
+
+	/**
+	 * 
+	 */
+	public Ami() {
+		super();
+	}
+
 	/**
 	 * @param id
 	 */
-	public Ami(String id) {
+	public Ami(Long id) {
 		super();
-		this.id = id;
+		this.setId(id);
 	}
-	
-	
-	
 
 	/**
 	 * @param id
@@ -61,12 +62,12 @@ public class Ami implements Serializable {
 	 * @param platform
 	 * @param imageType
 	 */
-	public Ami(String id, String repository, String imageId,
+	public Ami(Long id, String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,
 			String platform, String imageType) {
 		super();
-		this.id = id;
+		this.setId(id);
 		this.repository = repository;
 		this.imageId = imageId;
 		this.imageLocation = imageLocation;
@@ -79,8 +80,20 @@ public class Ami implements Serializable {
 		this.imageType = imageType;
 	}
 
+	/**
+	 * @return the id
+	 */
+	public Long getId() {
+		return id;
+	}
 
-
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getRepository() {
 		return repository;
@@ -161,6 +174,5 @@ public class Ami implements Serializable {
 	public void setImageType(String imageType) {
 		this.imageType = imageType;
 	}
-
 
 }
