@@ -1,25 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-version="2.5"
-xmlns="http://java.sun.com/xml/ns/javaee">
+	version="2.5" xmlns="http://java.sun.com/xml/ns/javaee">
+
+	<context-param>
+		<!-- max size of the upload request -->
+		<param-name>maxSize</param-name>
+		<param-value>3145728</param-value>
+	</context-param>
+	<context-param>
+		<!-- Useful in development mode to slow down the uploads in fast networks. 
+			Put the number of milliseconds to sleep in each block received in the server. 
+			false or 0, means don't use slow uploads -->
+		<param-name>slowUploads</param-name>
+		<param-value>200</param-value>
+	</context-param>
 
 	<!-- Servlets -->
 	<servlet>
-		<servlet-name>greetServlet</servlet-name>
-		<servlet-class>edu.kit.aifb.mirrormaze.server.GreetingServiceImpl</servlet-class>
+		<servlet-name>mazeServlet</servlet-name>
+		<servlet-class>edu.kit.aifb.mirrormaze.server.MirrorMazeServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
-		<servlet-name>greetServlet</servlet-name>
-		<url-pattern>/mirrormaze/greet</url-pattern>
+		<servlet-name>mazeServlet</servlet-name>
+		<url-pattern>/mirrormaze/maze</url-pattern>
+	</servlet-mapping>
+
+	<!-- <servlet> <servlet-name>uploadServlet</servlet-name> <servlet-class>edu.kit.aifb.mirrormaze.server.servlets.JSONImportServlet</servlet-class> 
+		</servlet> <servlet-mapping> <servlet-name>uploadServlet</servlet-name> <url-pattern>/mirrormaze/import</url-pattern> 
+		</servlet-mapping> -->
+	<servlet>
+		<servlet-name>uploadServlet</servlet-name>
+		<!-- This is the default servlet, it puts files in session -->
+		<servlet-class>edu.kit.aifb.mirrormaze.server.servlets.JSONBulkUploadServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>uploadServlet</servlet-name>
+		<url-pattern>*.gupld</url-pattern>
 	</servlet-mapping>
 
 	<!-- Default page to serve -->
 	<welcome-file-list>
 		<welcome-file>MirrorMaze.html</welcome-file>
 	</welcome-file-list>
-	
+
 	<servlet>
 		<servlet-name>RemoteApi</servlet-name>
 		<servlet-class>com.google.apphosting.utils.remoteapi.RemoteApiServlet</servlet-class>
@@ -28,7 +53,7 @@ xmlns="http://java.sun.com/xml/ns/javaee">
 		<servlet-name>RemoteApi</servlet-name>
 		<url-pattern>/remote_api</url-pattern>
 	</servlet-mapping>
-	
+
 	<security-constraint>
 		<web-resource-collection>
 			<url-pattern>/remote_api</url-pattern>
