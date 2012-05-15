@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
-	<application>mirrormazetheme</application>
+	<application>myownthemepark</application>
 	<version>1</version>
 
 	<!-- Allows App Engine to send multiple requests to one instance in parallel: -->
 	<threadsafe>true</threadsafe>
 	<!-- Upload Sessions -->
 	<sessions-enabled>true</sessions-enabled>
+
+	<!-- Entity Console -->
+	<admin-console>
+		<page name="Entity Console" url="/entity-console/main" />
+	</admin-console>
 
 	<!-- Configure serving/caching of GWT files -->
 	<static-files>

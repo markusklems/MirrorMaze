@@ -20,9 +20,14 @@ public class AmisDataSource {
 		
 		for (Ami ami : amis) {
 			result[i] = new ListGridRecord();
+			result[i].setAttribute("id", ami.getId());
 			result[i].setAttribute("name", ami.getName());
-			result[i].setAttribute("id", ami.getImageId());
-			//result[i].setAttribute("value", alt.getIndexResult());
+			result[i].setAttribute("amiId", ami.getImageId());
+			result[i].setAttribute("location", ami.getImageLocation());
+			result[i].setAttribute("architecture", ami.getArchitecture());
+			result[i].setAttribute("ownerAlias", ami.getImageOwnerAlias());
+			result[i].setAttribute("ownerId", ami.getOwnerId());
+			result[i].setAttribute("description", ami.getDescription());			
 			i++;
 		}
 		

@@ -21,9 +21,12 @@
 
 	<!-- Objectify -->
 	<inherits name="com.googlecode.objectify.Objectify" />
+	
+	<!-- Google API Visualization + Charts -->
+	<inherits name='com.google.gwt.visualization.Visualization'/>
 
 	<!-- GWTUpload Stylesheet -->
-	<stylesheet src="Upload.css" />
+	<!-- <stylesheet src="Upload.css" /> -->
 
 	<!-- Specify the app entry point class. -->
 	<entry-point class='edu.kit.aifb.mirrormaze.client.MirrorMaze' />
