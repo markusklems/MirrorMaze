@@ -9,7 +9,8 @@ import edu.kit.aifb.mirrormaze.client.model.Ami;
 public class AmisDataSource {
 	
 	private List<Ami> amis;
-	
+
+
 	public ListGridRecord[] createListGridRecords() {
 		
 		
@@ -27,7 +28,9 @@ public class AmisDataSource {
 			result[i].setAttribute("architecture", ami.getArchitecture());
 			result[i].setAttribute("ownerAlias", ami.getImageOwnerAlias());
 			result[i].setAttribute("ownerId", ami.getOwnerId());
-			result[i].setAttribute("description", ami.getDescription());			
+			result[i].setAttribute("description", ami.getDescription());
+			result[i].setAttribute("executeLink", "https://console.aws.amazon.com/ec2/home?region=us-east-1#launchAmi=" + ami.getImageId());
+			
 			i++;
 		}
 		

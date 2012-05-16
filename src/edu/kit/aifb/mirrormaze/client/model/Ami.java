@@ -4,6 +4,11 @@ import java.io.Serializable;
 
 import javax.persistence.Id;
 
+import com.googlecode.objectify.annotation.Cached;
+import com.googlecode.objectify.annotation.Indexed;
+
+@Cached
+@Indexed
 public class Ami implements Serializable {
 
 	/**

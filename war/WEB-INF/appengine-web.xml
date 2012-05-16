@@ -8,10 +8,11 @@
 	<!-- Upload Sessions -->
 	<sessions-enabled>true</sessions-enabled>
 
-	<!-- Entity Console -->
+	<!-- Admin Console -->
 	<admin-console>
 		<page name="Entity Console" url="/entity-console/main" />
-	</admin-console>
+        <page name="Appstats" url="/appstats" />
+    </admin-console>
 
 	<!-- Configure serving/caching of GWT files -->
 	<static-files>

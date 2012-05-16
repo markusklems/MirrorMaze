@@ -22,7 +22,12 @@ import com.smartgwt.client.data.RecordList;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.SummaryFunctionType;
 import com.smartgwt.client.util.SC;
+import com.smartgwt.client.widgets.Canvas;
+import com.smartgwt.client.widgets.events.ScrolledEvent;
+import com.smartgwt.client.widgets.events.ScrolledHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
+import com.smartgwt.client.widgets.form.fields.FormItem;
+import com.smartgwt.client.widgets.form.fields.HeaderItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressEvent;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressHandler;
@@ -31,6 +36,10 @@ import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.SummaryFunction;
 import com.smartgwt.client.widgets.layout.Layout;
 import com.smartgwt.client.widgets.layout.VLayout;
+import com.smartgwt.client.widgets.tab.Tab;
+import com.smartgwt.client.widgets.tab.TabSet;
+import com.smartgwt.client.widgets.tab.events.TabSelectedEvent;
+import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
 
 import edu.kit.aifb.mirrormaze.client.datasources.AmisDataSource;
 import edu.kit.aifb.mirrormaze.client.model.Ami;
@@ -66,6 +75,8 @@ public class MirrorMaze implements EntryPoint {
 
 	private ListGrid amis = new ListGrid();
 
+	private TabSet tabs = new TabSet();
+	
 	/**
 	 * This is the entry point method.
 	 */
@@ -75,6 +86,11 @@ public class MirrorMaze implements EntryPoint {
 		masterLayout.setWidth100();
 		masterLayout.setHeight100();
 
+		tabs.setWidth100();
+		tabs.setHeight100();
+		tabs.setBackgroundColor("white");
+		
+		/*
 		DynamicForm s3bucket = new DynamicForm();
 
 		final TextItem s3bucketName = new TextItem("s3bucketName",
@@ -102,7 +118,10 @@ public class MirrorMaze implements EntryPoint {
 		});
 		s3bucket.setItems(s3bucketName);
 		masterLayout.addMember(s3bucket);
+		*/
 
+		VLayout amiLayout = new VLayout();
+		
 		amis.setWidth100();
 		amis.setHeight100();
 		ListGridField id = new ListGridField("id", "Id");
@@ -131,16 +150,26 @@ public class MirrorMaze implements EntryPoint {
 		ListGridField description = new ListGridField("description",
 				"Description");
 		description.setType(ListGridFieldType.TEXT);
+		description.setCanEdit(true);
+		ListGridField executeLink = new ListGridField("executeLink", "Launch");
+		executeLink.setType(ListGridFieldType.LINK);
+		executeLink.setLinkText(Canvas.imgHTML("[SKINIMG]actions/forward.png",
+				16, 16, "execute", "align=center", null));
+
 		amis.setFields(id, amiId, name, location, architecture, ownerAlias,
-				ownerId, description);
+				ownerId, description, executeLink);
 		amis.setCanResizeFields(true);
 		amis.setShowGridSummary(true);
 		amis.setShowGroupSummary(true);
 
-		masterLayout.addMember(amis);
+		amiLayout.addMember(amis);
+		
 
 		DynamicForm addAmi = new DynamicForm();
 
+		HeaderItem addAmiHeader = new HeaderItem("addAmiHeader", "Add AMI");
+		addAmiHeader.setValue("Add AMI");
+		
 		final TextItem addAmiId = new TextItem("addAmiId", "Ami Id");
 		addAmiId.addKeyPressHandler(new KeyPressHandler() {
 
@@ -165,26 +194,36 @@ public class MirrorMaze implements EntryPoint {
 							});
 			}
 		});
-		addAmi.setItems(addAmiId);
-		masterLayout.addMember(addAmi);
+		addAmi.setItems(addAmiHeader, addAmiId);
+		amiLayout.addMember(addAmi);
+		
+		Tab amiTable = new Tab("AMI List");
+		amiTable.setPane(amiLayout);
+		tabs.addTab(amiTable);
 
+		final Tab statsTab = new Tab("Statistics");
+		statsTab.addTabSelectedHandler(new TabSelectedHandler() {
+			@Override
+			public void onTabSelected(TabSelectedEvent event) {
+				refreshPie();				
+			}
+		});
+		tabs.addTab(statsTab);
+		final VLayout pieLayout = new VLayout();
 		Runnable onLoadCallback = new Runnable() {
 			public void run() {
-
-				Options options = Options.create();
-				options.setWidth(400);
-				options.setHeight(240);
-				options.setTitle("AMI Owners");
 
 				// Create a pie chart visualization.
 				pie = new PieChart((AbstractDataTable) DataTable.create(),
 						PieChart.createOptions());
-				pie.draw(getPieData(amis.getDataAsRecordList()), options);
 
 				// pie.addSelectHandler(createSelectHandler(pie));
-				masterLayout.addMember(pie);
+				pieLayout.addMember(pie);
+				statsTab.setPane(pieLayout);
+				pieLayout.draw();
+
 				pieReady = true;
-				refresh();
+				refreshPie();
 			}
 		};
 
@@ -194,6 +233,8 @@ public class MirrorMaze implements EntryPoint {
 				PieChart.PACKAGE);
 
 		// masterLayout.addMember(new UploadTestsView().getContent());
+
+		masterLayout.addMember(tabs);
 
 		masterLayout.draw();
 		refresh();
@@ -211,11 +252,15 @@ public class MirrorMaze implements EntryPoint {
 			public void onSuccess(List<Ami> result) {
 				amisDataSource.setAmis(result);
 				amis.setData(amisDataSource.createListGridRecords());
-				if (pieReady)
-					pie.draw(getPieData(amis.getDataAsRecordList()));
+				refreshPie();
 			}
 
 		});
+	}
+
+	private void refreshPie() {
+		if (pieReady)
+			pie.draw(getPieData(amis.getDataAsRecordList()), getPieOptions());
 	}
 
 	private AbstractDataTable getPieData(RecordList amiList) {
@@ -238,6 +283,14 @@ public class MirrorMaze implements EntryPoint {
 					amiList.findAll("ownerId", uniqueOwnersList.get(i)).length);
 		}
 		return data;
+	}
+	
+	private Options getPieOptions() {
+		Options options = Options.create();
+		options.setWidth(400);
+		options.setHeight(240);
+		options.setTitle("AMI Owners");
+		return options;
 	}
 
 }

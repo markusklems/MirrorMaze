@@ -15,7 +15,6 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.gson.Gson;
-import com.googlecode.objectify.Query;
 
 import edu.kit.aifb.mirrormaze.client.model.Ami;
 import edu.kit.aifb.mirrormaze.server.db.dao.MazeDAO;
@@ -44,9 +43,9 @@ public class AmiManager {
 	}
 
 	public static List<Ami> getAmis() {
-		Query<Ami> amisQuery = dao.ofy().query(Ami.class);
-
-		return amisQuery.list();
+		return new ArrayList<Ami>(dao.ofy()
+				.get(dao.ofy().query(Ami.class).chunkSize(10000).fetchKeys())
+				.values());
 	}
 
 	public static boolean importJSONFromS3(String S3Bucket) {

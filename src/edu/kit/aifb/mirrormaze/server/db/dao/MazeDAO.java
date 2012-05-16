@@ -22,7 +22,7 @@ public class MazeDAO extends DAOBase {
 	 * 
 	 */
 	public MazeDAO() {
-		super();
+		this(new ObjectifyOpts().setSessionCache(true));
 	}
 
 	/**
