@@ -3,6 +3,9 @@
  */
 package edu.kit.aifb.mirrormaze.client.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
@@ -24,14 +27,28 @@ public class Software {
 
 	@Parent
 	private Key<Ami> ami;
-	
+
 	private String name;
-	
+
 	private String version;
 
-	
-	
-	
+	private Map<String, String> attributes = new HashMap<String, String>();
+
+	/**
+	 * 
+	 */
+	public Software() {
+		super();
+	}
+
+	/**
+	 * @param id
+	 */
+	public Software(Long id) {
+		super();
+		this.id = id;
+	}
+
 	/**
 	 * @param ami
 	 * @param name
@@ -73,33 +90,42 @@ public class Software {
 	}
 
 	/**
-	 * @param id the id to set
+	 * @param id
+	 *            the id to set
 	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
 
 	/**
-	 * @param ami the ami to set
+	 * @param ami
+	 *            the ami to set
 	 */
 	public void setAmi(Key<Ami> ami) {
 		this.ami = ami;
 	}
 
 	/**
-	 * @param name the name to set
+	 * @param name
+	 *            the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	/**
-	 * @param version the version to set
+	 * @param version
+	 *            the version to set
 	 */
 	public void setVersion(String version) {
 		this.version = version;
 	}
 
-	
-	
+	/**
+	 * @return the attributes
+	 */
+	public Map<String, String> getAttributes() {
+		return attributes;
+	}
+
 }

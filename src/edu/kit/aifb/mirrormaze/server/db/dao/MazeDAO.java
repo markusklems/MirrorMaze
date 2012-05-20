@@ -9,6 +9,7 @@ import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.util.DAOBase;
 
 import edu.kit.aifb.mirrormaze.client.model.Ami;
+import edu.kit.aifb.mirrormaze.client.model.Language;
 import edu.kit.aifb.mirrormaze.client.model.Software;
 
 /**
@@ -38,6 +39,10 @@ public class MazeDAO extends DAOBase {
 		return id != null ? ofy().find(Ami.class, id) : null;
 	}
 
+	public Ami getAmi(Key<Ami> key) {
+		return key != null ? ofy().get(key) : null;
+	}
+
 	public Ami getOrCreateAmi(Long id, String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,
@@ -56,16 +61,41 @@ public class MazeDAO extends DAOBase {
 			return found;
 	}
 
-	public Software getOrCreateSoftware(Long id, String amiId, String name,
+	public Key<Ami> findAmiByImageId(String amiId) {
+		return ofy().query(Ami.class).filter("imageId", amiId).getKey();
+	}
+
+	public Software getOrCreateSoftware(Long id, Key<Ami> amiKey, String name,
 			String version) {
 		Software found = id != null ? ofy().find(Software.class, id) : null;
+		found = found != null ? found : ofy().query(Software.class)
+				.filter("ami", ofy().get(amiKey)).filter("name", name).get();
 		if (found == null) {
-			Key<Ami> amiKey = ofy().query(Ami.class).filter("imageId", "amiId")
-					.fetchKeys().iterator().next();
 			Software software = new Software(amiKey, name, version);
 			ofy().put(software);
 			return software;
 		} else
 			return found;
+	}
+
+	public void updateSoftware(Software software) {
+		ofy().put(software);
+	}
+
+	public Language getOrCreateLanguage(Long id, Key<Ami> amiKey, String name,
+			String version) {
+		Language found = id != null ? ofy().find(Language.class, id) : null;
+		found = found != null ? found : ofy().query(Language.class)
+				.filter("ami", ofy().get(amiKey)).filter("name", name).get();
+		if (found == null) {
+			Language language = new Language(amiKey, name, version);
+			ofy().put(language);
+			return language;
+		} else
+			return found;
+	}
+
+	public void updateLanguage(Language language) {
+		ofy().put(language);
 	}
 }

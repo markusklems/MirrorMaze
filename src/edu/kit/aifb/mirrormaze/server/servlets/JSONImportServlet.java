@@ -2,7 +2,6 @@ package edu.kit.aifb.mirrormaze.server.servlets;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -17,6 +16,7 @@ import org.json.JSONObject;
 
 import com.google.gwt.user.client.ui.FileUpload;
 
+import edu.kit.aifb.mirrormaze.client.model.Language;
 import edu.kit.aifb.mirrormaze.client.model.Software;
 import edu.kit.aifb.mirrormaze.server.AmiManager;
 
@@ -79,6 +79,9 @@ public class JSONImportServlet extends HttpServlet {
 					+ req.getContentLength() + " bytes) from "
 					+ req.getRemoteAddr());
 
+			String amiId = req.getHeader("AMI-ID");
+			log.info("Got AMI ID:" + amiId);
+
 			// Gson gson = new Gson();
 			// log.info("Parsed Gson " + gson.fromJson(new
 			// InputStreamReader(stream), JsonObject.class));
@@ -90,34 +93,91 @@ public class JSONImportServlet extends HttpServlet {
 			JSONObject json = new JSONObject();
 			try {
 				json = new JSONObject(jsonString);
-				log.info("Parsed Json " + json);
-				log.info("Json has keys: " + json.names());
+				log.fine("Parsed Json " + json);
+				log.finer("Json has keys: " + json.names());
 			} catch (JSONException e) {
 				log.severe("No JSON sent or wrong format.");
 				return;
 			}
 
-			JSONObject software = json.getJSONObject("software");
-			log.info("Software JSON " + software);
+			JSONObject software = json.optJSONObject("software");
+			if (software != null) {
+				log.finer("Software JSON " + software);
 
-			JSONArray softwareNames = software.names();
-			log.info("Key Array JSON " + softwareNames);
-			for (int i = 0; i < softwareNames.length(); i++) {
-				log.info("software "
-						+ softwareNames.getString(i)
-						+ " with version "
-						+ software.getJSONObject(softwareNames.getString(i))
-								.getString("version"));
-				/*log.info("Saved object "
-						+ AmiManager.saveSoftware(
-								"",
-								softwareNames.getString(i),
-								software.getJSONObject(
-										softwareNames.getString(i)).getString(
-										"version")));*/
+				JSONArray softwareNames = software.names();
+				log.finer("Key Array JSON " + softwareNames);
+				for (int i = 0; i < softwareNames.length(); i++) {
+					log.fine("software "
+							+ softwareNames.getString(i)
+							+ " with version "
+							+ software
+									.getJSONObject(softwareNames.getString(i))
+									.getString("version"));
+
+					Software soft = AmiManager.saveSoftware(amiId,
+							softwareNames.getString(i),
+							software.getJSONObject(softwareNames.getString(i))
+									.getString("version"));
+					if (soft != null) {
+						JSONArray softwareAttributes = software.getJSONObject(
+								softwareNames.getString(i)).names();
+						for (int j = 0; j < softwareAttributes.length(); j++)
+							soft.getAttributes().put(
+									softwareAttributes.getString(i),
+									software.getJSONObject(
+											softwareNames.getString(i))
+											.getString(
+													softwareAttributes
+															.getString(i)));
+
+						AmiManager.updateSoftware(soft);
+
+						log.info("Saved object " + soft);
+					} else
+						log.warning("Not able to save software information for given Ami Id "
+								+ amiId + "!");
+
+				}
 			}
 
-			// store
+			JSONObject languages = json.optJSONObject("languages");
+			if (languages != null) {
+				log.finer("Languages JSON " + languages);
+
+				JSONArray languagesNames = languages.names();
+				log.finer("Key Array JSON " + languagesNames);
+				for (int i = 0; i < languagesNames.length(); i++) {
+					log.fine("languages "
+							+ languagesNames.getString(i)
+							+ " with version "
+							+ languages.getJSONObject(
+									languagesNames.getString(i)).getString(
+									"version"));
+
+					Language lang = AmiManager.saveLanguage(amiId,
+							languagesNames.getString(i), languages
+									.getJSONObject(languagesNames.getString(i))
+									.getString("version"));
+					if (lang != null) {
+						JSONArray languageAttributes = languages.getJSONObject(
+								languagesNames.getString(i)).names();
+						for (int j = 0; j < languageAttributes.length(); j++)
+							lang.getAttributes().put(
+									languageAttributes.getString(i),
+									languages.getJSONObject(
+											languagesNames.getString(i))
+											.getString(
+													languageAttributes
+															.getString(i)));
+
+						AmiManager.updateLanguage(lang);
+						log.info("Saved object " + lang);
+					} else
+						log.warning("Not able to save programming language information for given Ami Id "
+								+ amiId + "!");
+
+				}
+			}
 
 		} catch (JSONException e) {
 

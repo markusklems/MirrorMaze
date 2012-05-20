@@ -15,8 +15,10 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.gson.Gson;
+import com.googlecode.objectify.Key;
 
 import edu.kit.aifb.mirrormaze.client.model.Ami;
+import edu.kit.aifb.mirrormaze.client.model.Language;
 import edu.kit.aifb.mirrormaze.client.model.Software;
 import edu.kit.aifb.mirrormaze.server.db.dao.MazeDAO;
 
@@ -40,16 +42,36 @@ public class AmiManager {
 		else
 			return false;
 	}
-	
-	
-	public static boolean saveSoftware(String amiId, String name, String version) {
-		Software newSoftware = dao.getOrCreateSoftware(null, amiId, name, version);
-		if (newSoftware != null && newSoftware.getId() != null)
-			return true;
-		else
-			return false;
+
+	public static Software saveSoftware(String amiId, String name,
+			String version) {
+		Software newSoftware = null;
+		Key<Ami> amiKey = dao.findAmiByImageId(amiId);
+
+		if (amiKey != null)
+			newSoftware = dao.getOrCreateSoftware(null, amiKey, name, version);
+
+		return newSoftware;
 	}
-	
+
+	public static void updateSoftware(Software software) {
+		dao.updateSoftware(software);
+	}
+
+	public static Language saveLanguage(String amiId, String name,
+			String version) {
+		Language newLanguage = null;
+		Key<Ami> amiKey = dao.findAmiByImageId(amiId);
+
+		if (amiKey != null)
+			newLanguage = dao.getOrCreateLanguage(null, amiKey, name, version);
+
+		return newLanguage;
+	}
+
+	public static void updateLanguage(Language language) {
+		dao.updateLanguage(language);
+	}
 
 	public static List<Ami> getAmis() {
 		return new ArrayList<Ami>(dao.ofy()
