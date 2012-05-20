@@ -118,7 +118,7 @@ public class JSONImportServlet extends HttpServlet {
 							softwareNames.getString(i),
 							software.getJSONObject(softwareNames.getString(i))
 									.getString("version"));
-					log.info("Saved/restored software " + soft);
+					log.fine("Saved/restored software " + soft);
 					if (soft != null) {
 						JSONArray softwareAttributes = software.getJSONObject(
 								softwareNames.getString(i)).names();
@@ -133,12 +133,13 @@ public class JSONImportServlet extends HttpServlet {
 
 						AmiManager.updateSoftware(soft);
 
-						log.info("Saved object " + soft);
+						log.fine("Saved object " + soft);
 					} else
 						log.severe("Not able to save software information for given Ami Id "
 								+ amiId + "!");
 
 				}
+				log.info("Saved " + softwareNames.length() + " software objects");
 			}
 
 			JSONObject languages = json.optJSONObject("languages");
@@ -159,7 +160,7 @@ public class JSONImportServlet extends HttpServlet {
 							languagesNames.getString(i), languages
 									.getJSONObject(languagesNames.getString(i))
 									.getString("version"));
-					log.info("Saved/restored programming language " + lang);
+					log.fine("Saved/restored programming language " + lang);
 					if (lang != null) {
 						JSONArray languageAttributes = languages.getJSONObject(
 								languagesNames.getString(i)).names();
@@ -173,12 +174,13 @@ public class JSONImportServlet extends HttpServlet {
 															.getString(j)));
 
 						AmiManager.updateLanguage(lang);
-						log.info("Saved object " + lang);
+						log.fine("Saved object " + lang);
 					} else
 						log.severe("Not able to save programming language information for given Ami Id "
 								+ amiId + "!");
 
 				}
+				log.info("Saved " + languagesNames.length() + " programming language objects");
 			}
 
 		} catch (JSONException e) {
