@@ -118,23 +118,24 @@ public class JSONImportServlet extends HttpServlet {
 							softwareNames.getString(i),
 							software.getJSONObject(softwareNames.getString(i))
 									.getString("version"));
+					log.info("Saved/restored software " + soft);
 					if (soft != null) {
 						JSONArray softwareAttributes = software.getJSONObject(
 								softwareNames.getString(i)).names();
 						for (int j = 0; j < softwareAttributes.length(); j++)
 							soft.getAttributes().put(
-									softwareAttributes.getString(i),
+									softwareAttributes.getString(j),
 									software.getJSONObject(
 											softwareNames.getString(i))
 											.getString(
 													softwareAttributes
-															.getString(i)));
+															.getString(j)));
 
 						AmiManager.updateSoftware(soft);
 
 						log.info("Saved object " + soft);
 					} else
-						log.warning("Not able to save software information for given Ami Id "
+						log.severe("Not able to save software information for given Ami Id "
 								+ amiId + "!");
 
 				}
@@ -158,32 +159,38 @@ public class JSONImportServlet extends HttpServlet {
 							languagesNames.getString(i), languages
 									.getJSONObject(languagesNames.getString(i))
 									.getString("version"));
+					log.info("Saved/restored programming language " + lang);
 					if (lang != null) {
 						JSONArray languageAttributes = languages.getJSONObject(
 								languagesNames.getString(i)).names();
 						for (int j = 0; j < languageAttributes.length(); j++)
 							lang.getAttributes().put(
-									languageAttributes.getString(i),
+									languageAttributes.getString(j),
 									languages.getJSONObject(
 											languagesNames.getString(i))
 											.getString(
 													languageAttributes
-															.getString(i)));
+															.getString(j)));
 
 						AmiManager.updateLanguage(lang);
 						log.info("Saved object " + lang);
 					} else
-						log.warning("Not able to save programming language information for given Ami Id "
+						log.severe("Not able to save programming language information for given Ami Id "
 								+ amiId + "!");
 
 				}
 			}
 
 		} catch (JSONException e) {
-
+			log.severe("Error while parsing JSON upload" + e.getMessage()
+					+ ", trace: " + e.getStackTrace());
+			log.throwing(JSONImportServlet.class.getName(), "doPost", e);
 			e.printStackTrace();
 
 		} catch (Exception ex) {
+			log.severe("Unexpected error" + ex.getMessage() + ", trace: "
+					+ ex.getStackTrace());
+			log.throwing(JSONImportServlet.class.getName(), "doPost", ex);
 			ex.printStackTrace();
 		}
 

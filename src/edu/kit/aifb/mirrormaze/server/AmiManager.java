@@ -28,6 +28,13 @@ public class AmiManager {
 
 	private static MazeDAO dao = new MazeDAO();
 
+	/**
+	 * 
+	 */
+	public AmiManager() {
+		super();
+	}
+
 	public static boolean saveAmi(String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,

@@ -3,24 +3,33 @@
  */
 package edu.kit.aifb.mirrormaze.client.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Indexed;
 import com.googlecode.objectify.annotation.Parent;
+import com.googlecode.objectify.annotation.Serialized;
 
 /**
  * @author mugglmenzel
  * 
  */
 
+@Entity
 @Cached
 @Indexed
-public class Language {
+public class Language implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	private Long id;
@@ -32,6 +41,7 @@ public class Language {
 
 	private String version;
 
+	@Serialized
 	private Map<String, String> attributes = new HashMap<String, String>();
 
 	/**

@@ -2,11 +2,13 @@ package edu.kit.aifb.mirrormaze.client.model;
 
 import java.io.Serializable;
 
+import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Indexed;
 
+@Entity
 @Cached
 @Indexed
 public class Ami implements Serializable {

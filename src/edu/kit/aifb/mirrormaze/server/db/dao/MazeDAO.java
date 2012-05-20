@@ -3,6 +3,8 @@
  */
 package edu.kit.aifb.mirrormaze.server.db.dao;
 
+import java.util.logging.Logger;
+
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyOpts;
 import com.googlecode.objectify.ObjectifyService;
@@ -19,8 +21,12 @@ import edu.kit.aifb.mirrormaze.client.model.Software;
 public class MazeDAO extends DAOBase {
 	static {
 		ObjectifyService.register(Ami.class);
+		ObjectifyService.register(Language.class);
+		ObjectifyService.register(Software.class);
 	}
 
+	private static Logger log = Logger.getLogger(MazeDAO.class.getName());
+	
 	/**
 	 * 
 	 */
@@ -70,9 +76,11 @@ public class MazeDAO extends DAOBase {
 		Software found = id != null ? ofy().find(Software.class, id) : null;
 		found = found != null ? found : ofy().query(Software.class)
 				.filter("ami", ofy().get(amiKey)).filter("name", name).get();
+		log.info("Found software " + found);
 		if (found == null) {
 			Software software = new Software(amiKey, name, version);
 			ofy().put(software);
+			log.info("Saved software " + software);
 			return software;
 		} else
 			return found;
