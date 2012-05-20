@@ -24,5 +24,82 @@ public class Software {
 
 	@Parent
 	private Key<Ami> ami;
+	
+	private String name;
+	
+	private String version;
 
+	
+	
+	
+	/**
+	 * @param ami
+	 * @param name
+	 * @param version
+	 */
+	public Software(Key<Ami> ami, String name, String version) {
+		super();
+		this.ami = ami;
+		this.name = name;
+		this.version = version;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * @return the ami
+	 */
+	public Key<Ami> getAmi() {
+		return ami;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @return the version
+	 */
+	public String getVersion() {
+		return version;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	/**
+	 * @param ami the ami to set
+	 */
+	public void setAmi(Key<Ami> ami) {
+		this.ami = ami;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * @param version the version to set
+	 */
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	
+	
 }

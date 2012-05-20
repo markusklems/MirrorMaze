@@ -17,6 +17,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.gson.Gson;
 
 import edu.kit.aifb.mirrormaze.client.model.Ami;
+import edu.kit.aifb.mirrormaze.client.model.Software;
 import edu.kit.aifb.mirrormaze.server.db.dao.MazeDAO;
 
 public class AmiManager {
@@ -31,16 +32,24 @@ public class AmiManager {
 			String platform, String imageType) {
 
 		// Check for duplicate AMIs? TODO
-		Ami newAmi = dao.getOrCreateAmiFull(null, repository, imageId,
+		Ami newAmi = dao.getOrCreateAmi(null, repository, imageId,
 				imageLocation, imageOwnerAlias, ownerId, name, description,
 				architecture, platform, imageType);
-		System.out.println("Manager saved " + newAmi + " with "
-				+ newAmi.getId());
 		if (newAmi != null && newAmi.getId() != null)
 			return true;
 		else
 			return false;
 	}
+	
+	
+	public static boolean saveSoftware(String amiId, String name, String version) {
+		Software newSoftware = dao.getOrCreateSoftware(null, amiId, name, version);
+		if (newSoftware != null && newSoftware.getId() != null)
+			return true;
+		else
+			return false;
+	}
+	
 
 	public static List<Ami> getAmis() {
 		return new ArrayList<Ami>(dao.ofy()

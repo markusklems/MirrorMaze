@@ -2,6 +2,7 @@ package edu.kit.aifb.mirrormaze.server.servlets;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -9,11 +10,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.google.gwt.user.client.ui.FileUpload;
+
+import edu.kit.aifb.mirrormaze.client.model.Software;
+import edu.kit.aifb.mirrormaze.server.AmiManager;
 
 /**
  * @author mugglmenzel
@@ -66,34 +71,65 @@ public class JSONImportServlet extends HttpServlet {
 
 		try {
 
-			ServletFileUpload upload = new ServletFileUpload();
 			resp.setContentType("text/plain");
 
-			FileItemIterator iterator = upload.getItemIterator(req);
-			while (iterator.hasNext()) {
-				FileItemStream item = iterator.next();
-				InputStream stream = item.openStream();
+			InputStream stream = req.getInputStream();
 
-				if (item.isFormField()) {
-					log.warning("Got a form field: " + item.getFieldName());
-				} else {
-					log.info("Got an uploaded file: " + item.getFieldName()
-							+ ", name = " + item.getName());
-				}
+			log.info("Got Upload " + req.getContentType() + " ("
+					+ req.getContentLength() + " bytes) from "
+					+ req.getRemoteAddr());
 
-				log.info("Fully parsed : ");
+			// Gson gson = new Gson();
+			// log.info("Parsed Gson " + gson.fromJson(new
+			// InputStreamReader(stream), JsonObject.class));
 
-				// store
-
+			String jsonString = IOUtils.toString(stream);
+			log.info("Got JSON String "
+					+ jsonString.substring(0, jsonString.length() > 128 ? 128
+							: jsonString.length() - 1));
+			JSONObject json = new JSONObject();
+			try {
+				json = new JSONObject(jsonString);
+				log.info("Parsed Json " + json);
+				log.info("Json has keys: " + json.names());
+			} catch (JSONException e) {
+				log.severe("No JSON sent or wrong format.");
+				return;
 			}
+
+			JSONObject software = json.getJSONObject("software");
+			log.info("Software JSON " + software);
+
+			JSONArray softwareNames = software.names();
+			log.info("Key Array JSON " + softwareNames);
+			for (int i = 0; i < softwareNames.length(); i++) {
+				log.info("software "
+						+ softwareNames.getString(i)
+						+ " with version "
+						+ software.getJSONObject(softwareNames.getString(i))
+								.getString("version"));
+				/*log.info("Saved object "
+						+ AmiManager.saveSoftware(
+								"",
+								softwareNames.getString(i),
+								software.getJSONObject(
+										softwareNames.getString(i)).getString(
+										"version")));*/
+			}
+
+			// store
+
+		} catch (JSONException e) {
+
+			e.printStackTrace();
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 
-		log.info("returning to referer " + req.getHeader("referer"));
-		resp.sendRedirect(req.getHeader("referer") != null
-				&& !"".equals(req.getHeader("referer")) ? req
-				.getHeader("referer") : "localhost:8088");
+		// log.info("returning to referer " + req.getHeader("referer"));
+		// resp.sendRedirect(req.getHeader("referer") != null &&
+		// !"".equals(req.getHeader("referer")) ? req.getHeader("referer") :
+		// "localhost:8088");
 	}
-
 }
