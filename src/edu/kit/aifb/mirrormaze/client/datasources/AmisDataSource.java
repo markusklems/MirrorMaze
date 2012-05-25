@@ -24,6 +24,7 @@ public class AmisDataSource {
 			result[i].setAttribute("id", ami.getId());
 			result[i].setAttribute("name", ami.getName());
 			result[i].setAttribute("amiId", ami.getImageId());
+			result[i].setAttribute("repository", ami.getRepository());
 			result[i].setAttribute("location", ami.getImageLocation());
 			result[i].setAttribute("architecture", ami.getArchitecture());
 			result[i].setAttribute("ownerAlias", ami.getImageOwnerAlias());

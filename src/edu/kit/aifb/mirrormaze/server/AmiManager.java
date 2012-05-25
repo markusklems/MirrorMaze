@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import com.amazonaws.auth.PropertiesCredentials;
@@ -14,6 +16,8 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.google.appengine.api.datastore.QueryResultIterable;
+import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.gson.Gson;
 import com.googlecode.objectify.Key;
 
@@ -50,13 +54,25 @@ public class AmiManager {
 			return false;
 	}
 
-	public static Software saveSoftware(String amiId, String name,
-			String version) {
+	public static Software saveSoftware(String amiId, String repository,
+			String name, String version) {
 		Software newSoftware = null;
-		Key<Ami> amiKey = dao.findAmiByImageId(amiId);
+		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
 
 		if (amiKey != null)
 			newSoftware = dao.getOrCreateSoftware(null, amiKey, name, version);
+
+		return newSoftware;
+	}
+
+	public static Software saveSoftware(String amiId, String repository,
+			String name, String version, Map<String, String> attributes) {
+		Software newSoftware = null;
+		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
+
+		if (amiKey != null)
+			newSoftware = dao.getOrCreateSoftware(null, amiKey, name, version,
+					attributes);
 
 		return newSoftware;
 	}
@@ -65,13 +81,25 @@ public class AmiManager {
 		dao.updateSoftware(software);
 	}
 
-	public static Language saveLanguage(String amiId, String name,
-			String version) {
+	public static Language saveLanguage(String amiId, String repository,
+			String name, String version) {
 		Language newLanguage = null;
-		Key<Ami> amiKey = dao.findAmiByImageId(amiId);
+		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
 
 		if (amiKey != null)
 			newLanguage = dao.getOrCreateLanguage(null, amiKey, name, version);
+
+		return newLanguage;
+	}
+
+	public static Language saveLanguage(String amiId, String repository,
+			String name, String version, Map<String, String> attributes) {
+		Language newLanguage = null;
+		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
+
+		if (amiKey != null)
+			newLanguage = dao.getOrCreateLanguage(null, amiKey, name, version,
+					attributes);
 
 		return newLanguage;
 	}
@@ -80,10 +108,38 @@ public class AmiManager {
 		dao.updateLanguage(language);
 	}
 
-	public static List<Ami> getAmis() {
-		return new ArrayList<Ami>(dao.ofy()
-				.get(dao.ofy().query(Ami.class).chunkSize(10000).fetchKeys())
-				.values());
+	public static List<Ami> getAmis(String region) {
+		QueryResultIterable<Key<Ami>> keys = null;
+		if ("all".equals(region) || "".equals(region) || region == null)
+			keys = dao.ofy().query(Ami.class).chunkSize(10000).fetchKeys();
+		else
+			keys = dao.ofy().query(Ami.class).filter("repository", region)
+					.chunkSize(10000).fetchKeys();
+
+		log.info("got region " + region + ", results " + keys);
+
+		return keys != null ? new ArrayList<Ami>(dao.ofy().get(keys).values())
+				: new ArrayList<Ami>();
+	}
+
+	public static Map<String, Long> getSoftwarePackagesPieData(String region) {
+		Map<String, Long> softwareCount = new LinkedHashMap<String, Long>();
+		QueryResultIterator<Software> iterator = dao.ofy()
+				.query(Software.class).fetch().iterator();
+
+		while (iterator.hasNext()) {
+			Software s = iterator.next();
+			Ami a = dao.ofy().get(s.getAmi());
+			log.info("region " + region + ", found Ami " + a);
+			if (region.equals(a.getRepository()))
+				softwareCount.put(
+						s.getName(),
+						softwareCount.get(s.getName()) != null ? softwareCount
+								.get(s.getName()) + 1 : 1);
+		}
+		log.info("Generated " + softwareCount);
+
+		return softwareCount;
 	}
 
 	public static boolean importJSONFromS3(String S3Bucket) {

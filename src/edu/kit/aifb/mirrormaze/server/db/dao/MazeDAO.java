@@ -3,6 +3,7 @@
  */
 package edu.kit.aifb.mirrormaze.server.db.dao;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 import com.googlecode.objectify.Key;
@@ -26,7 +27,7 @@ public class MazeDAO extends DAOBase {
 	}
 
 	private static Logger log = Logger.getLogger(MazeDAO.class.getName());
-	
+
 	/**
 	 * 
 	 */
@@ -54,9 +55,8 @@ public class MazeDAO extends DAOBase {
 			String name, String description, String architecture,
 			String platform, String imageType) {
 		Ami found = id != null ? ofy().find(Ami.class, id) : null;
-		found = ofy().get(
-				ofy().query(Ami.class).filter("imageId", imageId).fetchKeys()
-						.iterator().next());
+		Key<Ami> foundKey = findAmiByImageIdAndRepository(imageId, repository);
+		found = found == null && foundKey != null ? ofy().get(foundKey) : found;
 		if (found == null) {
 			Ami ami = new Ami(id, repository, imageId, imageLocation,
 					imageOwnerAlias, ownerId, name, description, architecture,
@@ -67,18 +67,35 @@ public class MazeDAO extends DAOBase {
 			return found;
 	}
 
-	public Key<Ami> findAmiByImageId(String amiId) {
-		return ofy().query(Ami.class).filter("imageId", amiId).getKey();
+	public Key<Ami> findAmiByImageIdAndRepository(String amiId,
+			String repository) {
+		return ofy().query(Ami.class).filter("imageId", amiId)
+				.filter("repository", repository).getKey();
 	}
 
 	public Software getOrCreateSoftware(Long id, Key<Ami> amiKey, String name,
 			String version) {
 		Software found = id != null ? ofy().find(Software.class, id) : null;
 		found = found != null ? found : ofy().query(Software.class)
-				.filter("ami", ofy().get(amiKey)).filter("name", name).get();
-		log.info("Found software " + found);
+				.ancestor(ofy().get(amiKey)).filter("name", name).get();
+		log.fine("Found software " + found);
 		if (found == null) {
 			Software software = new Software(amiKey, name, version);
+			ofy().put(software);
+			log.info("Saved software " + software);
+			return software;
+		} else
+			return found;
+	}
+
+	public Software getOrCreateSoftware(Long id, Key<Ami> amiKey, String name,
+			String version, Map<String, String> attributes) {
+		Software found = id != null ? ofy().find(Software.class, id) : null;
+		found = found != null ? found : ofy().query(Software.class)
+				.ancestor(ofy().get(amiKey)).filter("name", name).get();
+		log.fine("Found software " + found);
+		if (found == null) {
+			Software software = new Software(amiKey, name, version, attributes);
 			ofy().put(software);
 			log.info("Saved software " + software);
 			return software;
@@ -94,9 +111,24 @@ public class MazeDAO extends DAOBase {
 			String version) {
 		Language found = id != null ? ofy().find(Language.class, id) : null;
 		found = found != null ? found : ofy().query(Language.class)
-				.filter("ami", ofy().get(amiKey)).filter("name", name).get();
+				.ancestor(ofy().get(amiKey)).filter("name", name).get();
+		log.fine("Found language " + found);
 		if (found == null) {
 			Language language = new Language(amiKey, name, version);
+			ofy().put(language);
+			return language;
+		} else
+			return found;
+	}
+
+	public Language getOrCreateLanguage(Long id, Key<Ami> amiKey, String name,
+			String version, Map<String, String> attributes) {
+		Language found = id != null ? ofy().find(Language.class, id) : null;
+		found = found != null ? found : ofy().query(Language.class)
+				.ancestor(ofy().get(amiKey)).filter("name", name).get();
+		log.fine("Found language " + found);
+		if (found == null) {
+			Language language = new Language(amiKey, name, version, attributes);
 			ofy().put(language);
 			return language;
 		} else

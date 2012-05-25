@@ -2,6 +2,8 @@ package edu.kit.aifb.mirrormaze.server.servlets;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -81,6 +83,13 @@ public class JSONImportServlet extends HttpServlet {
 
 			String amiId = req.getHeader("AMI-ID");
 			log.info("Got AMI ID:" + amiId);
+			String repository = req.getHeader("REPO");
+			log.info("Got REPO:" + repository);
+			if (amiId == null || repository == null || "".equals(amiId)
+					|| "".equals(repository)) {
+				log.severe("AMI ID and REPO HTTP Header required.");
+				return;
+			}
 
 			// Gson gson = new Gson();
 			// log.info("Parsed Gson " + gson.fromJson(new
@@ -114,32 +123,32 @@ public class JSONImportServlet extends HttpServlet {
 									.getJSONObject(softwareNames.getString(i))
 									.getString("version"));
 
-					Software soft = AmiManager.saveSoftware(amiId,
+					Map<String, String> softAttributes = new HashMap<String, String>();
+					JSONArray softwareAttributes = software.getJSONObject(
+							softwareNames.getString(i)).names();
+					for (int j = 0; j < softwareAttributes.length(); j++)
+						softAttributes.put(
+								softwareAttributes.getString(j),
+								software.getJSONObject(
+										softwareNames.getString(i)).getString(
+										softwareAttributes.getString(j)));
+
+					Software soft = AmiManager.saveSoftware(amiId, repository,
 							softwareNames.getString(i),
 							software.getJSONObject(softwareNames.getString(i))
-									.getString("version"));
-					log.fine("Saved/restored software " + soft);
+									.getString("version"), softAttributes);
 					if (soft != null) {
-						JSONArray softwareAttributes = software.getJSONObject(
-								softwareNames.getString(i)).names();
-						for (int j = 0; j < softwareAttributes.length(); j++)
-							soft.getAttributes().put(
-									softwareAttributes.getString(j),
-									software.getJSONObject(
-											softwareNames.getString(i))
-											.getString(
-													softwareAttributes
-															.getString(j)));
-
+						log.fine("Saved/restored software " + soft);
+						soft.getAttributes().putAll(softAttributes);
 						AmiManager.updateSoftware(soft);
-
 						log.fine("Saved object " + soft);
 					} else
 						log.severe("Not able to save software information for given Ami Id "
 								+ amiId + "!");
 
 				}
-				log.info("Saved " + softwareNames.length() + " software objects");
+				log.info("Saved " + softwareNames.length()
+						+ " software objects");
 			}
 
 			JSONObject languages = json.optJSONObject("languages");
@@ -156,23 +165,23 @@ public class JSONImportServlet extends HttpServlet {
 									languagesNames.getString(i)).getString(
 									"version"));
 
-					Language lang = AmiManager.saveLanguage(amiId,
+					Map<String, String> langAttributes = new HashMap<String, String>();
+					JSONArray languageAttributes = languages.getJSONObject(
+							languagesNames.getString(i)).names();
+					for (int j = 0; j < languageAttributes.length(); j++)
+						langAttributes.put(
+								languageAttributes.getString(j),
+								languages.getJSONObject(
+										languagesNames.getString(i)).getString(
+										languageAttributes.getString(j)));
+
+					Language lang = AmiManager.saveLanguage(amiId, repository,
 							languagesNames.getString(i), languages
 									.getJSONObject(languagesNames.getString(i))
-									.getString("version"));
-					log.fine("Saved/restored programming language " + lang);
+									.getString("version"), langAttributes);
 					if (lang != null) {
-						JSONArray languageAttributes = languages.getJSONObject(
-								languagesNames.getString(i)).names();
-						for (int j = 0; j < languageAttributes.length(); j++)
-							lang.getAttributes().put(
-									languageAttributes.getString(j),
-									languages.getJSONObject(
-											languagesNames.getString(i))
-											.getString(
-													languageAttributes
-															.getString(j)));
-
+						log.fine("Saved/restored programming language " + lang);
+						lang.getAttributes().putAll(langAttributes);
 						AmiManager.updateLanguage(lang);
 						log.fine("Saved object " + lang);
 					} else
@@ -180,8 +189,13 @@ public class JSONImportServlet extends HttpServlet {
 								+ amiId + "!");
 
 				}
-				log.info("Saved " + languagesNames.length() + " programming language objects");
+				log.info("Saved " + languagesNames.length()
+						+ " programming language objects");
 			}
+
+			resp.getWriter().println(
+					"Saving software packages and programming languages for "
+							+ amiId + " (" + repository + ").");
 
 		} catch (JSONException e) {
 			log.severe("Error while parsing JSON upload" + e.getMessage()

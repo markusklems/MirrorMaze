@@ -37,8 +37,10 @@ public class Software implements Serializable {
 	@Parent
 	private Key<Ami> ami;
 
+	@Indexed
 	private String name;
 
+	@Indexed
 	private String version;
 
 	@Serialized
@@ -69,6 +71,21 @@ public class Software implements Serializable {
 		this.ami = ami;
 		this.name = name;
 		this.version = version;
+	}
+
+	/**
+	 * @param ami
+	 * @param name
+	 * @param version
+	 * @param attributes
+	 */
+	public Software(Key<Ami> ami, String name, String version,
+			Map<String, String> attributes) {
+		super();
+		this.ami = ami;
+		this.name = name;
+		this.version = version;
+		this.attributes = attributes;
 	}
 
 	/**

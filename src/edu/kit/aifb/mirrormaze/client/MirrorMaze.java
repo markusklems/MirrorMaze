@@ -2,10 +2,15 @@ package edu.kit.aifb.mirrormaze.client;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import org.apache.hadoop.metrics.ganglia.GangliaContext;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -14,21 +19,21 @@ import com.google.gwt.visualization.client.AbstractDataTable;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
-import com.google.gwt.visualization.client.events.ReadyHandler;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 import com.smartgwt.client.data.Record;
 import com.smartgwt.client.data.RecordList;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.SummaryFunctionType;
+import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
-import com.smartgwt.client.widgets.events.ScrolledEvent;
-import com.smartgwt.client.widgets.events.ScrolledHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
-import com.smartgwt.client.widgets.form.fields.FormItem;
+import com.smartgwt.client.widgets.form.fields.ComboBoxItem;
 import com.smartgwt.client.widgets.form.fields.HeaderItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
+import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
+import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressEvent;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressHandler;
 import com.smartgwt.client.widgets.grid.ListGrid;
@@ -70,13 +75,39 @@ public class MirrorMaze implements EntryPoint {
 	 */
 	private final AmisDataSource amisDataSource = new AmisDataSource();
 
-	private PieChart pie;
-	private boolean pieReady = false;
+	private Map<String, Long> softwarePackagesPieData = new HashMap<String, Long>();
+
+	private PieChart pieAMIOwners;
+	private boolean pieAMIOwnersReady = false;
+
+	private PieChart pieSoftwarePackages;
+	private boolean pieSoftwarePackagesReady = false;
 
 	private ListGrid amis = new ListGrid();
 
 	private TabSet tabs = new TabSet();
-	
+
+	private String region = Repository.EU_1.getName();
+
+	public enum Repository {
+		US_EAST1("ec2.us-east-1.amazonaws.com"), US_WEST_1(
+				"ec2.us-west-1.amazonaws.com"), US_WEST_2(
+				"ec2.us-west-2.amazonaws.com"), EU_1(
+				"ec2.eu-west-1.amazonaws.com"), SOUTH_ASIA_EAST_1(
+				"ec2.ap-southeast-1.amazonaws.com"), NORTH_ASIA_EAST_1(
+				"ec2.ap-southeast-1.amazonaws.com"), SOUTH_AMERICA_EAST_1(
+				"ec2.sa-east-1.amazonaws.com");
+		final String name;
+
+		Repository(final String name) {
+			this.name = name;
+		}
+
+		public String getName() {
+			return name;
+		}
+	}
+
 	/**
 	 * This is the entry point method.
 	 */
@@ -89,45 +120,66 @@ public class MirrorMaze implements EntryPoint {
 		tabs.setWidth100();
 		tabs.setHeight100();
 		tabs.setBackgroundColor("white");
-		
-		/*
-		DynamicForm s3bucket = new DynamicForm();
 
-		final TextItem s3bucketName = new TextItem("s3bucketName",
-				"S3 Bucket Name");
-		s3bucketName.addKeyPressHandler(new KeyPressHandler() {
+		/*
+		 * DynamicForm s3bucket = new DynamicForm();
+		 * 
+		 * final TextItem s3bucketName = new TextItem("s3bucketName",
+		 * "S3 Bucket Name"); s3bucketName.addKeyPressHandler(new
+		 * KeyPressHandler() {
+		 * 
+		 * @Override public void onKeyPress(KeyPressEvent event) { if
+		 * (event.getKeyName().equals("Enter"))
+		 * mirrorMazeService.importJSONFromS3( s3bucketName.getDisplayValue(),
+		 * new AsyncCallback<Boolean>() {
+		 * 
+		 * @Override public void onSuccess(Boolean result) {
+		 * System.out.println("import success."); }
+		 * 
+		 * @Override public void onFailure(Throwable caught) {
+		 * System.out.println("import failed."); } }); } });
+		 * s3bucket.setItems(s3bucketName); masterLayout.addMember(s3bucket);
+		 */
+
+		VLayout amiLayout = new VLayout();
+
+		DynamicForm amiFilter = new DynamicForm();
+		final ComboBoxItem regionFilter = new ComboBoxItem();
+		regionFilter.setTitle("Select AWS Region");
+		regionFilter.setHint("Select of which AWS Region all AMIs are shown");
+		LinkedHashMap<String, String> regions = new LinkedHashMap<String, String>();
+		regions.put("all", "all");
+		for (Repository repo : Repository.values())
+			regions.put(repo.getName(), repo.name());
+		regionFilter.setValueMap(regions);
+		regionFilter.setDefaultValue(region);
+		regionFilter.addChangedHandler(new ChangedHandler() {
+
+			@Override
+			public void onChanged(ChangedEvent event) {
+				region = (String) regionFilter.getValueAsString();
+				refresh();
+			}
+		});
+		regionFilter.addKeyPressHandler(new KeyPressHandler() {
 
 			@Override
 			public void onKeyPress(KeyPressEvent event) {
 				if (event.getKeyName().equals("Enter"))
-					mirrorMazeService.importJSONFromS3(
-							s3bucketName.getDisplayValue(),
-							new AsyncCallback<Boolean>() {
-
-								@Override
-								public void onSuccess(Boolean result) {
-									System.out.println("import success.");
-								}
-
-								@Override
-								public void onFailure(Throwable caught) {
-									System.out.println("import failed.");
-								}
-							});
+					region = (String) regionFilter.getValueAsString();
+				refresh();
 			}
 		});
-		s3bucket.setItems(s3bucketName);
-		masterLayout.addMember(s3bucket);
-		*/
+		amiFilter.setFields(regionFilter);
+		amiLayout.addMember(amiFilter);
 
-		VLayout amiLayout = new VLayout();
-		
 		amis.setWidth100();
 		amis.setHeight100();
 		ListGridField id = new ListGridField("id", "Id");
 		ListGridField amiId = new ListGridField("amiId", "AMI Id");
 		amiId.setIncludeInRecordSummary(false);
 		amiId.setSummaryFunction(SummaryFunctionType.COUNT);
+		ListGridField repository = new ListGridField("repository", "Region");
 		ListGridField name = new ListGridField("name", "Name");
 		ListGridField location = new ListGridField("location", "Location");
 		ListGridField architecture = new ListGridField("architecture",
@@ -156,20 +208,19 @@ public class MirrorMaze implements EntryPoint {
 		executeLink.setLinkText(Canvas.imgHTML("[SKINIMG]actions/forward.png",
 				16, 16, "execute", "align=center", null));
 
-		amis.setFields(id, amiId, name, location, architecture, ownerAlias,
-				ownerId, description, executeLink);
+		amis.setFields(id, amiId, repository, name, location, architecture,
+				ownerAlias, ownerId, description, executeLink);
 		amis.setCanResizeFields(true);
 		amis.setShowGridSummary(true);
 		amis.setShowGroupSummary(true);
 
 		amiLayout.addMember(amis);
-		
 
 		DynamicForm addAmi = new DynamicForm();
 
 		HeaderItem addAmiHeader = new HeaderItem("addAmiHeader", "Add AMI");
 		addAmiHeader.setValue("Add AMI");
-		
+
 		final TextItem addAmiId = new TextItem("addAmiId", "Ami Id");
 		addAmiId.addKeyPressHandler(new KeyPressHandler() {
 
@@ -196,7 +247,7 @@ public class MirrorMaze implements EntryPoint {
 		});
 		addAmi.setItems(addAmiHeader, addAmiId);
 		amiLayout.addMember(addAmi);
-		
+
 		Tab amiTable = new Tab("AMI List");
 		amiTable.setPane(amiLayout);
 		tabs.addTab(amiTable);
@@ -205,7 +256,7 @@ public class MirrorMaze implements EntryPoint {
 		statsTab.addTabSelectedHandler(new TabSelectedHandler() {
 			@Override
 			public void onTabSelected(TabSelectedEvent event) {
-				refreshPie();				
+				refreshPie();
 			}
 		});
 		tabs.addTab(statsTab);
@@ -214,15 +265,21 @@ public class MirrorMaze implements EntryPoint {
 			public void run() {
 
 				// Create a pie chart visualization.
-				pie = new PieChart((AbstractDataTable) DataTable.create(),
+				pieAMIOwners = new PieChart(
+						(AbstractDataTable) DataTable.create(),
+						PieChart.createOptions());
+				pieSoftwarePackages = new PieChart(
+						(AbstractDataTable) DataTable.create(),
 						PieChart.createOptions());
 
 				// pie.addSelectHandler(createSelectHandler(pie));
-				pieLayout.addMember(pie);
+				pieLayout.addMember(pieAMIOwners);
+				pieLayout.addMember(pieSoftwarePackages);
 				statsTab.setPane(pieLayout);
 				pieLayout.draw();
 
-				pieReady = true;
+				pieAMIOwnersReady = true;
+				pieSoftwarePackagesReady = true;
 				refreshPie();
 			}
 		};
@@ -242,7 +299,7 @@ public class MirrorMaze implements EntryPoint {
 
 	private void refresh() {
 
-		mirrorMazeService.getAmis(new AsyncCallback<List<Ami>>() {
+		mirrorMazeService.getAmis(region, new AsyncCallback<List<Ami>>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -256,14 +313,32 @@ public class MirrorMaze implements EntryPoint {
 			}
 
 		});
+
+		mirrorMazeService.getSoftwarePackagesPieData(region,
+				new AsyncCallback<Map<String, Long>>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+					}
+
+					@Override
+					public void onSuccess(Map<String, Long> result) {
+						softwarePackagesPieData = result;
+						refreshPie();
+					}
+				});
 	}
 
 	private void refreshPie() {
-		if (pieReady)
-			pie.draw(getPieData(amis.getDataAsRecordList()), getPieOptions());
+		if (pieAMIOwnersReady)
+			pieAMIOwners.draw(getAMIOwnersPieData(amis.getDataAsRecordList()),
+					getAMIOwnersPieOptions());
+		if (pieSoftwarePackagesReady)
+			pieSoftwarePackages.draw(getSoftwarePackagesPieData(),
+					getSoftwarePackagesPieOptions());
 	}
 
-	private AbstractDataTable getPieData(RecordList amiList) {
+	private AbstractDataTable getAMIOwnersPieData(RecordList amiList) {
 		DataTable data = DataTable.create();
 		data.addColumn(ColumnType.STRING, "Owner Id");
 		data.addColumn(ColumnType.NUMBER, "#");
@@ -284,12 +359,39 @@ public class MirrorMaze implements EntryPoint {
 		}
 		return data;
 	}
-	
-	private Options getPieOptions() {
+
+	private Options getAMIOwnersPieOptions() {
 		Options options = Options.create();
 		options.setWidth(400);
 		options.setHeight(240);
 		options.setTitle("AMI Owners");
+		return options;
+	}
+
+	private AbstractDataTable getSoftwarePackagesPieData() {
+		DataTable data = DataTable.create();
+		data.addColumn(ColumnType.STRING, "Software Package");
+		data.addColumn(ColumnType.NUMBER, "#");
+
+		Map<String, Long> packages = new HashMap<String, Long>(
+				softwarePackagesPieData);
+		data.addRows(packages.size());
+		int i = 0;
+		for (String software : packages.keySet()) {
+			SC.say("adding data " + software + ", " + packages.get(software));
+			data.setValue(i, 0, software);
+			data.setValue(i, 1, packages.get(software).intValue());
+			i++;
+		}
+
+		return data;
+	}
+
+	private Options getSoftwarePackagesPieOptions() {
+		Options options = Options.create();
+		options.setWidth(400);
+		options.setHeight(240);
+		options.setTitle("Software Packages");
 		return options;
 	}
 

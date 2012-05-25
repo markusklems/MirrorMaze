@@ -1,6 +1,7 @@
 package edu.kit.aifb.mirrormaze.client;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -15,7 +16,9 @@ public interface MirrorMazeService extends RemoteService {
 			String name, String description, String architecture,
 			String platform, String imageType);
 	
-	public List<Ami> getAmis();
-	
-	public boolean importJSONFromS3(String S3Bucket); 
+	public boolean importJSONFromS3(String S3Bucket);
+
+	public List<Ami> getAmis(String region);
+
+	public Map<String, Long> getSoftwarePackagesPieData(String region); 
 }

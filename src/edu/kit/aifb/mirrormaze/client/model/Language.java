@@ -37,8 +37,10 @@ public class Language implements Serializable {
 	@Parent
 	private Key<Ami> ami;
 
+	@Indexed
 	private String name;
 
+	@Indexed
 	private String version;
 
 	@Serialized
@@ -72,6 +74,21 @@ public class Language implements Serializable {
 		this.ami = ami;
 		this.name = name;
 		this.version = version;
+	}
+
+	/**
+	 * @param ami
+	 * @param name
+	 * @param version
+	 * @param attributes
+	 */
+	public Language(Key<Ami> ami, String name, String version,
+			Map<String, String> attributes) {
+		super();
+		this.ami = ami;
+		this.name = name;
+		this.version = version;
+		this.attributes = attributes;
 	}
 
 	/**
