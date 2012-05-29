@@ -8,9 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
-
-import org.apache.hadoop.metrics.ganglia.GangliaContext;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -21,12 +18,12 @@ import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
+import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.Record;
 import com.smartgwt.client.data.RecordList;
 import com.smartgwt.client.types.ListGridFieldType;
+import com.smartgwt.client.types.RecordComponentPoolingMode;
 import com.smartgwt.client.types.SummaryFunctionType;
-import com.smartgwt.client.util.BooleanCallback;
-import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ComboBoxItem;
@@ -47,21 +44,44 @@ import com.smartgwt.client.widgets.tab.events.TabSelectedEvent;
 import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
 
 import edu.kit.aifb.mirrormaze.client.datasources.AmisDataSource;
-import edu.kit.aifb.mirrormaze.client.model.Ami;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class MirrorMaze implements EntryPoint {
-	/**
-	 * The message displayed to the user when the server cannot be reached or
-	 * returns an error.
-	 */
-	private static final String SERVER_ERROR = "An error occurred while "
-			+ "attempting to contact the server. Please check your network "
-			+ "connection and try again.";
 
-	private Logger log = Logger.getLogger(MirrorMaze.class.getName());
+	public enum Repository {
+		ALL("all", "all"), US_EAST1("ec2.us-east-1.amazonaws.com", "us-east-1"), US_WEST_1(
+				"ec2.us-west-1.amazonaws.com", "us-west-1"), US_WEST_2(
+				"ec2.us-west-2.amazonaws.com", "us-west-2"), EU_1(
+				"ec2.eu-west-1.amazonaws.com", "eu-west-1"), SOUTH_ASIA_EAST_1(
+				"ec2.ap-southeast-1.amazonaws.com", "ap-southeast-1"), NORTH_ASIA_EAST_1(
+				"ec2.ap-northeast-1.amazonaws.com", "ap-northeast-1"), SOUTH_AMERICA_EAST_1(
+				"ec2.sa-east-1.amazonaws.com", "sa-east-1");
+		final String name;
+		final String shortName;
+
+		Repository(final String name, final String shortName) {
+			this.name = name;
+			this.shortName = shortName;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getShortName() {
+			return shortName;
+		}
+
+		public static Repository findByName(String repository) {
+			for (Repository r : values())
+				if (r.getName().equals(repository))
+					return r;
+			return null;
+		}
+
+	}
 
 	/**
 	 * Create a remote service proxy to talk to the server-side Greeting
@@ -71,11 +91,8 @@ public class MirrorMaze implements EntryPoint {
 			.create(MirrorMazeService.class);
 
 	/**
-	 * Data sources
+	 * Data
 	 */
-	private final AmisDataSource amisDataSource = new AmisDataSource();
-
-	private Map<String, Long> softwarePackagesPieData = new HashMap<String, Long>();
 
 	private PieChart pieAMIOwners;
 	private boolean pieAMIOwnersReady = false;
@@ -87,26 +104,7 @@ public class MirrorMaze implements EntryPoint {
 
 	private TabSet tabs = new TabSet();
 
-	private String region = Repository.EU_1.getName();
-
-	public enum Repository {
-		US_EAST1("ec2.us-east-1.amazonaws.com"), US_WEST_1(
-				"ec2.us-west-1.amazonaws.com"), US_WEST_2(
-				"ec2.us-west-2.amazonaws.com"), EU_1(
-				"ec2.eu-west-1.amazonaws.com"), SOUTH_ASIA_EAST_1(
-				"ec2.ap-southeast-1.amazonaws.com"), NORTH_ASIA_EAST_1(
-				"ec2.ap-southeast-1.amazonaws.com"), SOUTH_AMERICA_EAST_1(
-				"ec2.sa-east-1.amazonaws.com");
-		final String name;
-
-		Repository(final String name) {
-			this.name = name;
-		}
-
-		public String getName() {
-			return name;
-		}
-	}
+	private Map<String, Long> softwarePackagesPieData = new HashMap<String, Long>();
 
 	/**
 	 * This is the entry point method.
@@ -152,12 +150,13 @@ public class MirrorMaze implements EntryPoint {
 		for (Repository repo : Repository.values())
 			regions.put(repo.getName(), repo.name());
 		regionFilter.setValueMap(regions);
-		regionFilter.setDefaultValue(region);
+		regionFilter.setDefaultValue(Repository.EU_1.getName());
 		regionFilter.addChangedHandler(new ChangedHandler() {
 
 			@Override
 			public void onChanged(ChangedEvent event) {
-				region = (String) regionFilter.getValueAsString();
+				amis.setCriteria(new Criteria("region", Repository.valueOf(
+						(String) regionFilter.getDisplayValue()).getName()));
 				refresh();
 			}
 		});
@@ -166,8 +165,10 @@ public class MirrorMaze implements EntryPoint {
 			@Override
 			public void onKeyPress(KeyPressEvent event) {
 				if (event.getKeyName().equals("Enter"))
-					region = (String) regionFilter.getValueAsString();
+					amis.setCriteria(new Criteria("region", Repository.valueOf(
+							(String) regionFilter.getDisplayValue()).getName()));
 				refresh();
+
 			}
 		});
 		amiFilter.setFields(regionFilter);
@@ -213,6 +214,10 @@ public class MirrorMaze implements EntryPoint {
 		amis.setCanResizeFields(true);
 		amis.setShowGridSummary(true);
 		amis.setShowGroupSummary(true);
+		amis.setDataSource(new AmisDataSource());
+		amis.setCriteria(new Criteria("region", Repository.EU_1.getName()));
+		amis.setAutoFetchData(true);
+		amis.setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
 
 		amiLayout.addMember(amis);
 
@@ -234,13 +239,11 @@ public class MirrorMaze implements EntryPoint {
 
 								@Override
 								public void onSuccess(Void result) {
-									System.out.println("Create AMI success.");
 									refresh();
 								}
 
 								@Override
 								public void onFailure(Throwable caught) {
-									System.out.println("Create AMI failed.");
 								}
 							});
 			}
@@ -256,7 +259,20 @@ public class MirrorMaze implements EntryPoint {
 		statsTab.addTabSelectedHandler(new TabSelectedHandler() {
 			@Override
 			public void onTabSelected(TabSelectedEvent event) {
-				refreshPie();
+				mirrorMazeService.getSoftwarePackagesPieData(amis.getCriteria()
+						.getAttribute("region"),
+						new AsyncCallback<Map<String, Long>>() {
+
+							@Override
+							public void onFailure(Throwable caught) {
+							}
+
+							@Override
+							public void onSuccess(Map<String, Long> result) {
+								softwarePackagesPieData = result;
+								refreshPie();
+							}
+						});
 			}
 		});
 		tabs.addTab(statsTab);
@@ -294,39 +310,10 @@ public class MirrorMaze implements EntryPoint {
 		masterLayout.addMember(tabs);
 
 		masterLayout.draw();
-		refresh();
 	}
 
 	private void refresh() {
-
-		mirrorMazeService.getAmis(region, new AsyncCallback<List<Ami>>() {
-
-			@Override
-			public void onFailure(Throwable caught) {
-			}
-
-			@Override
-			public void onSuccess(List<Ami> result) {
-				amisDataSource.setAmis(result);
-				amis.setData(amisDataSource.createListGridRecords());
-				refreshPie();
-			}
-
-		});
-
-		mirrorMazeService.getSoftwarePackagesPieData(region,
-				new AsyncCallback<Map<String, Long>>() {
-
-					@Override
-					public void onFailure(Throwable caught) {
-					}
-
-					@Override
-					public void onSuccess(Map<String, Long> result) {
-						softwarePackagesPieData = result;
-						refreshPie();
-					}
-				});
+		amis.fetchData(amis.getCriteria());
 	}
 
 	private void refreshPie() {
@@ -378,7 +365,6 @@ public class MirrorMaze implements EntryPoint {
 		data.addRows(packages.size());
 		int i = 0;
 		for (String software : packages.keySet()) {
-			SC.say("adding data " + software + ", " + packages.get(software));
 			data.setValue(i, 0, software);
 			data.setValue(i, 1, packages.get(software).intValue());
 			i++;

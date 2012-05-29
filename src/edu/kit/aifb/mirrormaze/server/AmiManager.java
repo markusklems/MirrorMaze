@@ -21,6 +21,7 @@ import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.gson.Gson;
 import com.googlecode.objectify.Key;
 
+import edu.kit.aifb.mirrormaze.client.datasources.responseModel.ListResponse;
 import edu.kit.aifb.mirrormaze.client.model.Ami;
 import edu.kit.aifb.mirrormaze.client.model.Language;
 import edu.kit.aifb.mirrormaze.client.model.Software;
@@ -108,36 +109,48 @@ public class AmiManager {
 		dao.updateLanguage(language);
 	}
 
-	public static List<Ami> getAmis(String region) {
+	public static ListResponse<Ami> getAmis(String region, int startRow,
+			int endRow) {
+
+		log.finer("request for region " + region + " from " + startRow + " to "
+				+ endRow);
+
 		QueryResultIterable<Key<Ami>> keys = null;
-		if ("all".equals(region) || "".equals(region) || region == null)
-			keys = dao.ofy().query(Ami.class).chunkSize(10000).fetchKeys();
-		else
-			keys = dao.ofy().query(Ami.class).filter("repository", region)
-					.chunkSize(10000).fetchKeys();
+		boolean regionAll = "all".equals(region) || "".equals(region)
+				|| region == null;
 
-		log.info("got region " + region + ", results " + keys);
+		int total = regionAll ? dao.ofy().query(Ami.class).count() : dao.ofy()
+				.query(Ami.class).filter("repository", region).count();
+		endRow = endRow > total ? total : endRow;
+		int size = endRow - startRow > -1 ? endRow - startRow : 0;
+		if (size > 0)
+			keys = regionAll ? dao.ofy().query(Ami.class).offset(startRow)
+					.limit(size).chunkSize(size).fetchKeys() : dao.ofy()
+					.query(Ami.class).filter("repository", region)
+					.offset(startRow).limit(size).chunkSize(size).fetchKeys();
 
-		return keys != null ? new ArrayList<Ami>(dao.ofy().get(keys).values())
-				: new ArrayList<Ami>();
+		log.fine("fetched for region " + region + " # " + size
+				+ " from a total of " + total + " records: " + keys);
+
+		return keys != null ? new ListResponse<Ami>(total, new ArrayList<Ami>(
+				dao.ofy().get(keys).values())) : new ListResponse<Ami>(total,
+				new ArrayList<Ami>());
 	}
 
 	public static Map<String, Long> getSoftwarePackagesPieData(String region) {
 		Map<String, Long> softwareCount = new LinkedHashMap<String, Long>();
 		QueryResultIterator<Software> iterator = dao.ofy()
-				.query(Software.class).fetch().iterator();
+				.query(Software.class).chunkSize(10000).fetch().iterator();
 
 		while (iterator.hasNext()) {
 			Software s = iterator.next();
 			Ami a = dao.ofy().get(s.getAmi());
-			log.info("region " + region + ", found Ami " + a);
 			if (region.equals(a.getRepository()))
 				softwareCount.put(
 						s.getName(),
 						softwareCount.get(s.getName()) != null ? softwareCount
 								.get(s.getName()) + 1 : 1);
 		}
-		log.info("Generated " + softwareCount);
 
 		return softwareCount;
 	}

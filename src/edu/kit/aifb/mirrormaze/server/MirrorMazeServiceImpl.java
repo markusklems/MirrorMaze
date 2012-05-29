@@ -1,11 +1,11 @@
 package edu.kit.aifb.mirrormaze.server;
 
-import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import edu.kit.aifb.mirrormaze.client.MirrorMazeService;
+import edu.kit.aifb.mirrormaze.client.datasources.responseModel.ListResponse;
 import edu.kit.aifb.mirrormaze.client.model.Ami;
 
 @SuppressWarnings("serial")
@@ -27,8 +27,8 @@ public class MirrorMazeServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public List<Ami> getAmis(String region) {
-		return AmiManager.getAmis(region);
+	public ListResponse<Ami> getAmis(String region, int startRow, int endRow) {
+		return AmiManager.getAmis(region, startRow, endRow);
 	}
 	
 	@Override

@@ -78,11 +78,11 @@ public class MazeDAO extends DAOBase {
 		Software found = id != null ? ofy().find(Software.class, id) : null;
 		found = found != null ? found : ofy().query(Software.class)
 				.ancestor(ofy().get(amiKey)).filter("name", name).get();
-		log.fine("Found software " + found);
+		log.finer("Found software " + found);
 		if (found == null) {
 			Software software = new Software(amiKey, name, version);
 			ofy().put(software);
-			log.info("Saved software " + software);
+			log.fine("Saved software " + software);
 			return software;
 		} else
 			return found;
@@ -93,11 +93,11 @@ public class MazeDAO extends DAOBase {
 		Software found = id != null ? ofy().find(Software.class, id) : null;
 		found = found != null ? found : ofy().query(Software.class)
 				.ancestor(ofy().get(amiKey)).filter("name", name).get();
-		log.fine("Found software " + found);
+		log.finer("Found software " + found);
 		if (found == null) {
 			Software software = new Software(amiKey, name, version, attributes);
 			ofy().put(software);
-			log.info("Saved software " + software);
+			log.fine("Saved software " + software);
 			return software;
 		} else
 			return found;
@@ -112,10 +112,11 @@ public class MazeDAO extends DAOBase {
 		Language found = id != null ? ofy().find(Language.class, id) : null;
 		found = found != null ? found : ofy().query(Language.class)
 				.ancestor(ofy().get(amiKey)).filter("name", name).get();
-		log.fine("Found language " + found);
+		log.finer("Found language " + found);
 		if (found == null) {
 			Language language = new Language(amiKey, name, version);
 			ofy().put(language);
+			log.fine("Saved language " + language);
 			return language;
 		} else
 			return found;
@@ -126,10 +127,11 @@ public class MazeDAO extends DAOBase {
 		Language found = id != null ? ofy().find(Language.class, id) : null;
 		found = found != null ? found : ofy().query(Language.class)
 				.ancestor(ofy().get(amiKey)).filter("name", name).get();
-		log.fine("Found language " + found);
+		log.finer("Found language " + found);
 		if (found == null) {
 			Language language = new Language(amiKey, name, version, attributes);
 			ofy().put(language);
+			log.fine("Saved language " + language);
 			return language;
 		} else
 			return found;

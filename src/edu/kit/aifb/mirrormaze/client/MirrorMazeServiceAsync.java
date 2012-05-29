@@ -1,10 +1,10 @@
 package edu.kit.aifb.mirrormaze.client;
 
-import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import edu.kit.aifb.mirrormaze.client.datasources.responseModel.ListResponse;
 import edu.kit.aifb.mirrormaze.client.model.Ami;
 
 public interface MirrorMazeServiceAsync {
@@ -16,7 +16,7 @@ public interface MirrorMazeServiceAsync {
 
 	void importJSONFromS3(String S3Bucket, AsyncCallback<Boolean> callback);
 
-	void getAmis(String region, AsyncCallback<List<Ami>> callback);
+	void getAmis(String region, int startRow, int endRow, AsyncCallback<ListResponse<Ami>> callback);
 
 	void getSoftwarePackagesPieData(String region,
 			AsyncCallback<Map<String, Long>> callback);
