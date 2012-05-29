@@ -24,6 +24,7 @@ import com.smartgwt.client.data.RecordList;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.RecordComponentPoolingMode;
 import com.smartgwt.client.types.SummaryFunctionType;
+import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ComboBoxItem;
@@ -104,6 +105,7 @@ public class MirrorMaze implements EntryPoint {
 
 	private TabSet tabs = new TabSet();
 
+	private Map<String, Long> amiOwnersPieData = new HashMap<String, Long>();
 	private Map<String, Long> softwarePackagesPieData = new HashMap<String, Long>();
 
 	/**
@@ -273,6 +275,20 @@ public class MirrorMaze implements EntryPoint {
 								refreshPie();
 							}
 						});
+				mirrorMazeService.getAmiOwnersPieData(amis.getCriteria()
+						.getAttribute("region"),
+						new AsyncCallback<Map<String, Long>>() {
+
+							@Override
+							public void onFailure(Throwable caught) {
+							}
+
+							@Override
+							public void onSuccess(Map<String, Long> result) {
+								amiOwnersPieData = result;
+								refreshPie();
+							}
+						});
 			}
 		});
 		tabs.addTab(statsTab);
@@ -318,31 +334,24 @@ public class MirrorMaze implements EntryPoint {
 
 	private void refreshPie() {
 		if (pieAMIOwnersReady)
-			pieAMIOwners.draw(getAMIOwnersPieData(amis.getDataAsRecordList()),
-					getAMIOwnersPieOptions());
+			pieAMIOwners.draw(getAMIOwnersPieData(), getAMIOwnersPieOptions());
 		if (pieSoftwarePackagesReady)
 			pieSoftwarePackages.draw(getSoftwarePackagesPieData(),
 					getSoftwarePackagesPieOptions());
 	}
 
-	private AbstractDataTable getAMIOwnersPieData(RecordList amiList) {
+	private AbstractDataTable getAMIOwnersPieData() {
 		DataTable data = DataTable.create();
 		data.addColumn(ColumnType.STRING, "Owner Id");
 		data.addColumn(ColumnType.NUMBER, "#");
 
-		Set<String> uniqueOwners = new HashSet<String>();
-
-		for (int i = 0; i < amiList.getLength(); i++) {
-			Record record = amiList.get(i);
-			uniqueOwners.add((record).getAttribute("ownerId"));
-		}
-		data.addRows(uniqueOwners.size());
-		List<String> uniqueOwnersList = new ArrayList<String>(uniqueOwners);
-
-		for (int i = 0; i < uniqueOwnersList.size(); i++) {
-			data.setValue(i, 0, uniqueOwnersList.get(i));
-			data.setValue(i, 1,
-					amiList.findAll("ownerId", uniqueOwnersList.get(i)).length);
+		Map<String, Long> owners = new HashMap<String, Long>(amiOwnersPieData);
+		data.addRows(owners.size());
+		int i = 0;
+		for (String owner : owners.keySet()) {
+			data.setValue(i, 0, owner);
+			data.setValue(i, 1, owners.get(owner).intValue());
+			i++;
 		}
 		return data;
 	}

@@ -137,6 +137,24 @@ public class AmiManager {
 				new ArrayList<Ami>());
 	}
 
+	public static Map<String, Long> getAmiOwnersPieData(String region) {
+		Map<String, Long> ownerCount = new LinkedHashMap<String, Long>();
+		QueryResultIterator<Ami> iterator = dao.ofy().query(Ami.class)
+				.filter("repository", region).chunkSize(10000).fetch()
+				.iterator();
+
+		while (iterator.hasNext()) {
+			Ami a = iterator.next();
+
+			ownerCount.put(
+					a.getOwnerId(),
+					ownerCount.get(a.getOwnerId()) != null ? ownerCount.get(a
+							.getOwnerId()) + 1 : 1);
+		}
+
+		return ownerCount;
+	}
+
 	public static Map<String, Long> getSoftwarePackagesPieData(String region) {
 		Map<String, Long> softwareCount = new LinkedHashMap<String, Long>();
 		QueryResultIterator<Software> iterator = dao.ofy()

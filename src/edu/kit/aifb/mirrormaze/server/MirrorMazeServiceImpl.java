@@ -32,6 +32,12 @@ public class MirrorMazeServiceImpl extends RemoteServiceServlet implements
 	}
 	
 	@Override
+	public Map<String, Long> getAmiOwnersPieData(String region) {
+		return AmiManager.getAmiOwnersPieData(region);
+	}
+
+	
+	@Override
 	public Map<String, Long> getSoftwarePackagesPieData(String region) {
 		return AmiManager.getSoftwarePackagesPieData(region);
 	}
