@@ -22,5 +22,7 @@ public interface MirrorMazeService extends RemoteService {
 
 	public Map<String, Long> getSoftwarePackagesPieData(String region);
 
-	public Map<String, Long> getAmiOwnersPieData(String region); 
+	public Map<String, Long> getAmiOwnersPieData(String region);
+
+	public int getNumberAmis(String region); 
 }

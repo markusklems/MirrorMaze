@@ -119,8 +119,7 @@ public class AmiManager {
 		boolean regionAll = "all".equals(region) || "".equals(region)
 				|| region == null;
 
-		int total = regionAll ? dao.ofy().query(Ami.class).count() : dao.ofy()
-				.query(Ami.class).filter("repository", region).count();
+		int total = getNumberAmis(region);
 		endRow = endRow > total ? total : endRow;
 		int size = endRow - startRow > -1 ? endRow - startRow : 0;
 		if (size > 0)
@@ -222,4 +221,11 @@ public class AmiManager {
 		return true;
 	}
 
+	public static int getNumberAmis(String region) {
+		return "all".equals(region) || "".equals(region) || region == null ? dao
+				.ofy().query(Ami.class).count()
+				: dao.ofy().query(Ami.class).filter("repository", region)
+						.count();
+
+	}
 }

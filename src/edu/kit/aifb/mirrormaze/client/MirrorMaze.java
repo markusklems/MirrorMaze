@@ -1,17 +1,16 @@
 package edu.kit.aifb.mirrormaze.client;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.visualization.client.AbstractDataTable;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
@@ -20,16 +19,14 @@ import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.Record;
-import com.smartgwt.client.data.RecordList;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.RecordComponentPoolingMode;
 import com.smartgwt.client.types.SummaryFunctionType;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
+import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ComboBoxItem;
-import com.smartgwt.client.widgets.form.fields.HeaderItem;
-import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressEvent;
@@ -37,6 +34,7 @@ import com.smartgwt.client.widgets.form.fields.events.KeyPressHandler;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.SummaryFunction;
+import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.Layout;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.tab.Tab;
@@ -101,6 +99,7 @@ public class MirrorMaze implements EntryPoint {
 	private PieChart pieSoftwarePackages;
 	private boolean pieSoftwarePackagesReady = false;
 
+	private Label amiNumber = new Label("0");
 	private ListGrid amis = new ListGrid();
 
 	private TabSet tabs = new TabSet();
@@ -114,32 +113,10 @@ public class MirrorMaze implements EntryPoint {
 	public void onModuleLoad() {
 
 		final Layout masterLayout = new VLayout();
-		masterLayout.setWidth100();
-		masterLayout.setHeight100();
 
 		tabs.setWidth100();
 		tabs.setHeight100();
 		tabs.setBackgroundColor("white");
-
-		/*
-		 * DynamicForm s3bucket = new DynamicForm();
-		 * 
-		 * final TextItem s3bucketName = new TextItem("s3bucketName",
-		 * "S3 Bucket Name"); s3bucketName.addKeyPressHandler(new
-		 * KeyPressHandler() {
-		 * 
-		 * @Override public void onKeyPress(KeyPressEvent event) { if
-		 * (event.getKeyName().equals("Enter"))
-		 * mirrorMazeService.importJSONFromS3( s3bucketName.getDisplayValue(),
-		 * new AsyncCallback<Boolean>() {
-		 * 
-		 * @Override public void onSuccess(Boolean result) {
-		 * System.out.println("import success."); }
-		 * 
-		 * @Override public void onFailure(Throwable caught) {
-		 * System.out.println("import failed."); } }); } });
-		 * s3bucket.setItems(s3bucketName); masterLayout.addMember(s3bucket);
-		 */
 
 		VLayout amiLayout = new VLayout();
 
@@ -157,20 +134,30 @@ public class MirrorMaze implements EntryPoint {
 
 			@Override
 			public void onChanged(ChangedEvent event) {
-				amis.setCriteria(new Criteria("region", Repository.valueOf(
-						(String) regionFilter.getDisplayValue()).getName()));
-				refresh();
+				try {
+					amis.setCriteria(new Criteria("region", Repository.valueOf(
+							(String) regionFilter.getDisplayValue()).getName()));
+					refresh();
+				} catch (Exception e) {
+				}
 			}
 		});
 		regionFilter.addKeyPressHandler(new KeyPressHandler() {
 
 			@Override
 			public void onKeyPress(KeyPressEvent event) {
-				if (event.getKeyName().equals("Enter"))
-					amis.setCriteria(new Criteria("region", Repository.valueOf(
-							(String) regionFilter.getDisplayValue()).getName()));
-				refresh();
+				try {
+					if (event.getKeyName().equals("Enter"))
+						amis.setCriteria(new Criteria("region",
+								Repository
+										.valueOf(
+												(String) regionFilter
+														.getDisplayValue())
+										.getName()));
 
+					refresh();
+				} catch (Exception e) {
+				}
 			}
 		});
 		amiFilter.setFields(regionFilter);
@@ -214,44 +201,44 @@ public class MirrorMaze implements EntryPoint {
 		amis.setFields(id, amiId, repository, name, location, architecture,
 				ownerAlias, ownerId, description, executeLink);
 		amis.setCanResizeFields(true);
-		amis.setShowGridSummary(true);
-		amis.setShowGroupSummary(true);
+		// amis.setShowGridSummary(true);
+		// amis.setShowGroupSummary(true);
 		amis.setDataSource(new AmisDataSource());
 		amis.setCriteria(new Criteria("region", Repository.EU_1.getName()));
 		amis.setAutoFetchData(true);
 		amis.setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
-
+		amis.setDataPageSize(20);
 		amiLayout.addMember(amis);
 
-		DynamicForm addAmi = new DynamicForm();
+		/*
+		 * DynamicForm addAmi = new DynamicForm();
+		 * 
+		 * HeaderItem addAmiHeader = new HeaderItem("addAmiHeader", "Add AMI");
+		 * addAmiHeader.setValue("Add AMI");
+		 * 
+		 * final TextItem addAmiId = new TextItem("addAmiId", "Ami Id");
+		 * addAmiId.addKeyPressHandler(new KeyPressHandler() {
+		 * 
+		 * @Override public void onKeyPress(KeyPressEvent event) { if
+		 * (event.getKeyName().equals("Enter")) mirrorMazeService.saveAmi(null,
+		 * addAmiId.getDisplayValue(), "", "", "", "Test AMI (" + new
+		 * Date().getTime() + ")", "", "", "", "", new AsyncCallback<Void>() {
+		 * 
+		 * @Override public void onSuccess(Void result) { refresh(); }
+		 * 
+		 * @Override public void onFailure(Throwable caught) { } }); } });
+		 * addAmi.setItems(addAmiHeader, addAmiId); amiLayout.addMember(addAmi);
+		 */
 
-		HeaderItem addAmiHeader = new HeaderItem("addAmiHeader", "Add AMI");
-		addAmiHeader.setValue("Add AMI");
-
-		final TextItem addAmiId = new TextItem("addAmiId", "Ami Id");
-		addAmiId.addKeyPressHandler(new KeyPressHandler() {
-
-			@Override
-			public void onKeyPress(KeyPressEvent event) {
-				if (event.getKeyName().equals("Enter"))
-					mirrorMazeService.saveAmi(null, addAmiId.getDisplayValue(),
-							"", "", "", "Test AMI (" + new Date().getTime()
-									+ ")", "", "", "", "",
-							new AsyncCallback<Void>() {
-
-								@Override
-								public void onSuccess(Void result) {
-									refresh();
-								}
-
-								@Override
-								public void onFailure(Throwable caught) {
-								}
-							});
-			}
-		});
-		addAmi.setItems(addAmiHeader, addAmiId);
-		amiLayout.addMember(addAmi);
+		HLayout amiInfo = new HLayout();
+		Label totalAMIs = new Label("AMIs available in this Region: ");
+		totalAMIs.setWrap(false);
+		totalAMIs.setAutoFit(true);
+		amiInfo.addMember(totalAMIs);
+		amiNumber.setWrap(false);
+		amiNumber.setAutoFit(true);
+		amiInfo.addMember(amiNumber);
+		amiLayout.addMember(amiInfo);
 
 		Tab amiTable = new Tab("AMI List");
 		amiTable.setPane(amiLayout);
@@ -304,11 +291,15 @@ public class MirrorMaze implements EntryPoint {
 						(AbstractDataTable) DataTable.create(),
 						PieChart.createOptions());
 
+				pieAMIOwners.setHeight("500px");
+				pieSoftwarePackages.setHeight("500px");
 				// pie.addSelectHandler(createSelectHandler(pie));
+
 				pieLayout.addMember(pieAMIOwners);
 				pieLayout.addMember(pieSoftwarePackages);
+
 				statsTab.setPane(pieLayout);
-				pieLayout.draw();
+				// pieLayout.draw();
 
 				pieAMIOwnersReady = true;
 				pieSoftwarePackagesReady = true;
@@ -321,15 +312,47 @@ public class MirrorMaze implements EntryPoint {
 		VisualizationUtils.loadVisualizationApi(onLoadCallback,
 				PieChart.PACKAGE);
 
-		// masterLayout.addMember(new UploadTestsView().getContent());
+		tabs.addTab(new Tab("Scan AMI"));
 
 		masterLayout.addMember(tabs);
 
-		masterLayout.draw();
+		if ("standalone".equals(Window.Location.getParameter("mode"))) {
+			RootPanel.get().getElement().getElementsByTagName("div").getItem(0)
+					.removeFromParent();
+			masterLayout.setWidth100();
+			masterLayout.setHeight100();
+			masterLayout.draw();
+		} else {
+			masterLayout.setWidth(970);
+			masterLayout.setHeight(700);
+			RootPanel.get("main").add(masterLayout);
+		}
+
+		refresh();
 	}
 
 	private void refresh() {
 		amis.fetchData(amis.getCriteria());
+		refreshAMINumber();
+	}
+
+	private void refreshAMINumber() {
+		mirrorMazeService.getNumberAmis(
+				amis.getCriteria().getAttribute("region"),
+				new AsyncCallback<Integer>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+
+					}
+
+					@Override
+					public void onSuccess(Integer result) {
+						if (result != null)
+							amiNumber.setContents(" " + result.toString());
+						SC.say("Set AMI Number to " + result);
+					}
+				});
 	}
 
 	private void refreshPie() {

@@ -24,4 +24,6 @@ public interface MirrorMazeServiceAsync {
 	void getAmiOwnersPieData(String region,
 			AsyncCallback<Map<String, Long>> callback);
 
+	void getNumberAmis(String region, AsyncCallback<Integer> callback);
+
 }
