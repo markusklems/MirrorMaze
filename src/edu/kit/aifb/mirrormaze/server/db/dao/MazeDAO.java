@@ -14,6 +14,7 @@ import com.googlecode.objectify.util.DAOBase;
 import edu.kit.aifb.mirrormaze.client.model.Ami;
 import edu.kit.aifb.mirrormaze.client.model.Language;
 import edu.kit.aifb.mirrormaze.client.model.Software;
+import edu.kit.aifb.mirrormaze.client.model.User;
 
 /**
  * @author mugglmenzel
@@ -24,6 +25,7 @@ public class MazeDAO extends DAOBase {
 		ObjectifyService.register(Ami.class);
 		ObjectifyService.register(Language.class);
 		ObjectifyService.register(Software.class);
+		ObjectifyService.register(User.class);
 	}
 
 	private static Logger log = Logger.getLogger(MazeDAO.class.getName());

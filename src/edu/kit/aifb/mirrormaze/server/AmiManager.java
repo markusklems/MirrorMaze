@@ -25,6 +25,8 @@ import edu.kit.aifb.mirrormaze.client.datasources.responseModel.ListResponse;
 import edu.kit.aifb.mirrormaze.client.model.Ami;
 import edu.kit.aifb.mirrormaze.client.model.Language;
 import edu.kit.aifb.mirrormaze.client.model.Software;
+import edu.kit.aifb.mirrormaze.client.model.User;
+import edu.kit.aifb.mirrormaze.client.model.UserRole;
 import edu.kit.aifb.mirrormaze.server.db.dao.MazeDAO;
 
 public class AmiManager {
@@ -109,8 +111,20 @@ public class AmiManager {
 		dao.updateLanguage(language);
 	}
 
-	public static ListResponse<Ami> getAmis(String region, int startRow,
-			int endRow) {
+	public static ListResponse<Ami> getAmis() {
+		return getAmis(UserRole.ADMIN.getDefaultUserId(), "all", 0, -1);
+	}
+	
+	public static ListResponse<Ami> getAmis(Long userId) {
+		return getAmis(userId, "all", 0, -1);
+	}
+
+	public static ListResponse<Ami> getAmis(Long userId, String region) {
+		return getAmis(userId, region, 0, -1);
+	}
+
+	public static ListResponse<Ami> getAmis(Long userId, String region,
+			int startRow, int endRow) {
 
 		log.finer("request for region " + region + " from " + startRow + " to "
 				+ endRow);
@@ -119,7 +133,7 @@ public class AmiManager {
 		boolean regionAll = "all".equals(region) || "".equals(region)
 				|| region == null;
 
-		int total = getNumberAmis(region);
+		int total = getNumberAmis(userId, region);
 		endRow = endRow > total ? total : endRow;
 		int size = endRow - startRow > -1 ? endRow - startRow : 0;
 		if (size > 0)
@@ -221,11 +235,18 @@ public class AmiManager {
 		return true;
 	}
 
-	public static int getNumberAmis(String region) {
-		return "all".equals(region) || "".equals(region) || region == null ? dao
-				.ofy().query(Ami.class).count()
-				: dao.ofy().query(Ami.class).filter("repository", region)
-						.count();
+	public static User getUser(Long userId) {
+		if(userId == UserRole.ADMIN.getDefaultUserId())
+			return new User("", UserRole.ADMIN);
+		return userId != null ? dao.ofy().get(User.class, userId) : null;
+	}
+
+	public static int getNumberAmis(Long userId, String region) {
+		return getUser(userId) == null
+				|| getUser(userId).getRole() == UserRole.USER ? 10 : "all"
+				.equals(region) || "".equals(region) || region == null ? dao
+				.ofy().query(Ami.class).count() : dao.ofy().query(Ami.class)
+				.filter("repository", region).count();
 
 	}
 }

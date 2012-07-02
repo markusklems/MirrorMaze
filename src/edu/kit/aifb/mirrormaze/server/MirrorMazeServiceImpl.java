@@ -27,13 +27,13 @@ public class MirrorMazeServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public ListResponse<Ami> getAmis(String region, int startRow, int endRow) {
-		return AmiManager.getAmis(region, startRow, endRow);
+	public ListResponse<Ami> getAmis(Long userId, String region, int startRow, int endRow) {
+		return AmiManager.getAmis(userId, region, startRow, endRow);
 	}
 	
 	@Override
-	public int getNumberAmis(String region) {
-		return AmiManager.getNumberAmis(region);
+	public int getNumberAmis(Long userId, String region) {
+		return AmiManager.getNumberAmis(userId, region);
 	}
 	
 	@Override

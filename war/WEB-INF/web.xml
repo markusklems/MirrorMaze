@@ -60,6 +60,14 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-name>uploadCSVServlet</servlet-name>
 		<url-pattern>/mirrormaze/importCSV</url-pattern>
 	</servlet-mapping>
+	<servlet>
+		<servlet-name>AMIDatabaseUpdateServlet</servlet-name>
+		<servlet-class>edu.kit.aifb.mirrormaze.server.servlets.AMIDatabaseUpdateServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AMIDatabaseUpdateServlet</servlet-name>
+		<url-pattern>/mirrormaze/updateAMI</url-pattern>
+	</servlet-mapping>
 
 	<!-- <servlet> <servlet-name>uploadServlet</servlet-name> <!// This is the 
 		default servlet, it puts files in session //> <servlet-class>edu.kit.aifb.mirrormaze.server.servlets.JSONBulkUploadServlet</servlet-class> 

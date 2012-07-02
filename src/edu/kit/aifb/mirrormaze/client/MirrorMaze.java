@@ -93,6 +93,8 @@ public class MirrorMaze implements EntryPoint {
 	 * Data
 	 */
 
+	private Long userId;
+
 	private PieChart pieAMIOwners;
 	private boolean pieAMIOwnersReady = false;
 
@@ -338,7 +340,8 @@ public class MirrorMaze implements EntryPoint {
 
 	private void refreshAMINumber() {
 		mirrorMazeService.getNumberAmis(
-				amis.getCriteria().getAttribute("region"),
+				amis.getCriteria().getAttributeAsLong("userId"), amis
+						.getCriteria().getAttribute("region"),
 				new AsyncCallback<Integer>() {
 
 					@Override
@@ -350,7 +353,6 @@ public class MirrorMaze implements EntryPoint {
 					public void onSuccess(Integer result) {
 						if (result != null)
 							amiNumber.setContents(" " + result.toString());
-						SC.say("Set AMI Number to " + result);
 					}
 				});
 	}

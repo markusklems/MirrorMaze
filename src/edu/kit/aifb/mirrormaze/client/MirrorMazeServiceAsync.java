@@ -16,7 +16,8 @@ public interface MirrorMazeServiceAsync {
 
 	void importJSONFromS3(String S3Bucket, AsyncCallback<Boolean> callback);
 
-	void getAmis(String region, int startRow, int endRow, AsyncCallback<ListResponse<Ami>> callback);
+	void getAmis(Long userId, String region, int startRow, int endRow,
+			AsyncCallback<ListResponse<Ami>> callback);
 
 	void getSoftwarePackagesPieData(String region,
 			AsyncCallback<Map<String, Long>> callback);
@@ -24,6 +25,7 @@ public interface MirrorMazeServiceAsync {
 	void getAmiOwnersPieData(String region,
 			AsyncCallback<Map<String, Long>> callback);
 
-	void getNumberAmis(String region, AsyncCallback<Integer> callback);
+	void getNumberAmis(Long userId, String region,
+			AsyncCallback<Integer> callback);
 
 }

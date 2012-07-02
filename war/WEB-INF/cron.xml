@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+  <cron>
+    <url>/mirrormaze/updateAMI</url>
+    <description>trigger AMI crawler</description>
+    <schedule>every day 07:30</schedule>
+    <target>ami-crawler</target>
+  </cron>
+</cronentries>

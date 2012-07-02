@@ -66,7 +66,7 @@ public class AmisDataSource extends GwtRpcDataSource {
 		int end = request.getEndRow() != null ? request.getEndRow().intValue()
 				: 0;
 
-		mirrorMazeService.getAmis(request.getCriteria().getAttribute("region"),
+		mirrorMazeService.getAmis(request.getCriteria().getAttributeAsLong("userId"), request.getCriteria().getAttribute("region"),
 				start, end, new AsyncCallback<ListResponse<Ami>>() {
 
 					@Override

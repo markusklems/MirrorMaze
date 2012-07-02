@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<backends>
+	<backend name="ami-crawler">
+		<options>
+			<dynamic>true</dynamic>
+		</options>
+	</backend>
+</backends>
