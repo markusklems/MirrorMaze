@@ -4,10 +4,9 @@
 package edu.kit.aifb.mirrormaze.server.servlets;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -79,7 +78,7 @@ public class AMIDatabaseUpdateServlet extends HttpServlet {
 			throws ServletException, IOException {
 
 		resp.setContentType("text/html");
-		
+
 		SortedSet<String> availableImages = new TreeSet<String>();
 
 		for (Ami ami : AmiManager.getAmis().getList()) {
@@ -91,22 +90,27 @@ public class AMIDatabaseUpdateServlet extends HttpServlet {
 
 		AmazonEC2Client ec2 = new AmazonEC2Client(credentials);
 		for (Repository repo : Repository.values()) {
-			ec2.setEndpoint(repo.getName());
-			DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest();
-			DescribeImagesResult result = ec2
-					.describeImages(describeImagesRequest);
-			for (Image img : result.getImages()) {
-				if (!availableImages.contains(repo.getName() + ""
-						+ img.getImageId())) {
-					AmiManager.saveAmi(repo.getName(), img.getImageId(),
-							img.getImageLocation(), img.getImageOwnerAlias(),
-							img.getOwnerId(), img.getName(),
-							img.getDescription(), img.getArchitecture(),
-							img.getPlatform(), img.getImageType());
-					log.fine("added " + img.getImageId() + " to database.");
-					resp.getWriter().println(
-							"added " + img.getImageId() + " to database.");
+			try {
+				ec2.setEndpoint(repo.getName());
+				DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest();
+				DescribeImagesResult result = ec2
+						.describeImages(describeImagesRequest);
+				for (Image img : result.getImages()) {
+					if (!availableImages.contains(repo.getName() + ""
+							+ img.getImageId())) {
+						AmiManager.saveAmi(repo.getName(), img.getImageId(),
+								img.getImageLocation(),
+								img.getImageOwnerAlias(), img.getOwnerId(),
+								img.getName(), img.getDescription(),
+								img.getArchitecture(), img.getPlatform(),
+								img.getImageType());
+						log.fine("added " + img.getImageId() + " to database.");
+						resp.getWriter().println(
+								"added " + img.getImageId() + " to database.");
+					}
 				}
+			} catch (Exception e) {
+				log.log(Level.WARNING, e.getLocalizedMessage(), e.getCause());
 			}
 		}
 	}
@@ -115,10 +119,8 @@ public class AMIDatabaseUpdateServlet extends HttpServlet {
 		try {
 			new AMIDatabaseUpdateServlet().doGet(null, null);
 		} catch (ServletException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
