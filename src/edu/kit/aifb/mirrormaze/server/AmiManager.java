@@ -42,19 +42,29 @@ public class AmiManager {
 		super();
 	}
 
+	
 	public static boolean saveAmi(String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,
 			String platform, String imageType) {
 
 		// Check for duplicate AMIs? TODO
-		Ami newAmi = dao.getOrCreateAmi(null, repository, imageId,
+		
+			return dao.createAmi(repository, imageId,
+					imageLocation, imageOwnerAlias, ownerId, name, description,
+					architecture, platform, imageType);
+	}
+	
+	
+	public static Ami saveOrGetAmi(String repository, String imageId,
+			String imageLocation, String imageOwnerAlias, String ownerId,
+			String name, String description, String architecture,
+			String platform, String imageType) {
+
+		// Check for duplicate AMIs? TODO
+		return dao.getOrCreateAmi(null, repository, imageId,
 				imageLocation, imageOwnerAlias, ownerId, name, description,
 				architecture, platform, imageType);
-		if (newAmi != null && newAmi.getId() != null)
-			return true;
-		else
-			return false;
 	}
 
 	public static Software saveSoftware(String amiId, String repository,

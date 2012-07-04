@@ -68,6 +68,14 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-name>AMIDatabaseUpdateServlet</servlet-name>
 		<url-pattern>/mirrormaze/updateAMI</url-pattern>
 	</servlet-mapping>
+	<servlet>
+		<servlet-name>AMICreateSearchIndexServlet</servlet-name>
+		<servlet-class>edu.kit.aifb.mirrormaze.server.servlets.AMICreateSearchIndexServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AMICreateSearchIndexServlet</servlet-name>
+		<url-pattern>/mirrormaze/createSearchIndexAMI</url-pattern>
+	</servlet-mapping>
 
 	<!-- <servlet> <servlet-name>uploadServlet</servlet-name> <!// This is the 
 		default servlet, it puts files in session //> <servlet-class>edu.kit.aifb.mirrormaze.server.servlets.JSONBulkUploadServlet</servlet-class> 

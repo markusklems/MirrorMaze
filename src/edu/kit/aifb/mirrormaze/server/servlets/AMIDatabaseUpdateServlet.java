@@ -4,8 +4,6 @@
 package edu.kit.aifb.mirrormaze.server.servlets;
 
 import java.io.IOException;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,7 +19,6 @@ import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.Image;
 
-import edu.kit.aifb.mirrormaze.client.model.Ami;
 import edu.kit.aifb.mirrormaze.server.AmiManager;
 
 /**
@@ -79,12 +76,6 @@ public class AMIDatabaseUpdateServlet extends HttpServlet {
 
 		resp.setContentType("text/html");
 
-		SortedSet<String> availableImages = new TreeSet<String>();
-
-		for (Ami ami : AmiManager.getAmis().getList()) {
-			availableImages.add(ami.getRepository() + "" + ami.getImageId());
-		}
-
 		AWSCredentials credentials = new PropertiesCredentials(this.getClass()
 				.getResourceAsStream("AwsCredentials.properties"));
 
@@ -96,15 +87,16 @@ public class AMIDatabaseUpdateServlet extends HttpServlet {
 				DescribeImagesResult result = ec2
 						.describeImages(describeImagesRequest);
 				for (Image img : result.getImages()) {
-					if (!availableImages.contains(repo.getName() + ""
-							+ img.getImageId())) {
-						AmiManager.saveAmi(repo.getName(), img.getImageId(),
-								img.getImageLocation(),
-								img.getImageOwnerAlias(), img.getOwnerId(),
-								img.getName(), img.getDescription(),
-								img.getArchitecture(), img.getPlatform(),
-								img.getImageType());
-						log.fine("added " + img.getImageId() + " to database.");
+
+					boolean added = AmiManager.saveAmi(repo.getName(),
+							img.getImageId(), img.getImageLocation(),
+							img.getImageOwnerAlias(), img.getOwnerId(),
+							img.getName(), img.getDescription(),
+							img.getArchitecture(), img.getPlatform(),
+							img.getImageType());
+
+					if (added) {
+						log.info("added " + img.getImageId() + " to database.");
 						resp.getWriter().println(
 								"added " + img.getImageId() + " to database.");
 					}

@@ -52,6 +52,22 @@ public class MazeDAO extends DAOBase {
 		return key != null ? ofy().get(key) : null;
 	}
 
+	public boolean createAmi(String repository, String imageId,
+			String imageLocation, String imageOwnerAlias, String ownerId,
+			String name, String description, String architecture,
+			String platform, String imageType) {
+
+		if (findAmiByImageIdAndRepository(imageId, repository) == null) {
+			Ami ami = new Ami(null, repository, imageId, imageLocation,
+					imageOwnerAlias, ownerId, name, description, architecture,
+					platform, imageType);
+			ofy().put(ami);
+			return true;
+		} else
+			return false;
+
+	}
+
 	public Ami getOrCreateAmi(Long id, String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,

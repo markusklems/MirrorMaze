@@ -7,6 +7,9 @@ import javax.persistence.Id;
 
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Indexed;
+import com.googlecode.objectify.annotation.Unindexed;
+import com.googlecode.objectify.condition.IfEmptyString;
+import com.googlecode.objectify.condition.IfNull;
 
 @Entity
 @Cached
@@ -25,20 +28,28 @@ public class Ami implements Serializable {
 
 	private String imageId;
 
+	@Unindexed({ IfNull.class, IfEmptyString.class })
 	private String imageLocation;
 
+	@Unindexed({ IfNull.class, IfEmptyString.class })
 	private String imageOwnerAlias;
 
+	@Unindexed({ IfNull.class, IfEmptyString.class })
 	private String ownerId;
 
+	@Unindexed({ IfNull.class, IfEmptyString.class })
 	private String name;
 
+	@Unindexed({ IfNull.class, IfEmptyString.class })
 	private String description;
 
+	@Unindexed({ IfNull.class, IfEmptyString.class })
 	private String architecture;
 
+	@Unindexed({ IfNull.class, IfEmptyString.class })
 	private String platform;
 
+	@Unindexed({ IfNull.class, IfEmptyString.class })
 	private String imageType;
 
 	/**
