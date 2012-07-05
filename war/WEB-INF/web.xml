@@ -37,11 +37,19 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	<!-- Servlets -->
 	<servlet>
 		<servlet-name>mazeServlet</servlet-name>
-		<servlet-class>edu.kit.aifb.mirrormaze.server.MirrorMazeServiceImpl</servlet-class>
+		<servlet-class>edu.kit.aifb.mirrormaze.server.services.MirrorMazeServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>mazeServlet</servlet-name>
 		<url-pattern>/mirrormaze/maze</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>loginServlet</servlet-name>
+		<servlet-class>edu.kit.aifb.mirrormaze.server.services.LoginServiceImpl</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>loginServlet</servlet-name>
+		<url-pattern>/mirrormaze/login</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -76,11 +84,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-name>AMICreateSearchIndexServlet</servlet-name>
 		<url-pattern>/mirrormaze/createSearchIndexAMI</url-pattern>
 	</servlet-mapping>
-
-	<!-- <servlet> <servlet-name>uploadServlet</servlet-name> <!// This is the 
-		default servlet, it puts files in session //> <servlet-class>edu.kit.aifb.mirrormaze.server.servlets.JSONBulkUploadServlet</servlet-class> 
-		</servlet> <servlet-mapping> <servlet-name>uploadServlet</servlet-name> <url-pattern>*.gupld</url-pattern> 
-		</servlet-mapping> -->
 
 	<servlet>
 		<servlet-name>RemoteApi</servlet-name>

@@ -13,10 +13,7 @@
 
 	<!-- Other module inherits -->
 	<inherits name="com.smartgwt.SmartGwt" />
-	<!-- Include GWTUpload library -->
-	<inherits name="gwtupload.GWTUpload" />
-	<!-- Include SWFUpload library -->
-	<inherits name="org.swfupload.SWFUpload" />
+
 	<inherits name='com.google.gwt.http.HTTP' />
 
 	<!-- Objectify -->

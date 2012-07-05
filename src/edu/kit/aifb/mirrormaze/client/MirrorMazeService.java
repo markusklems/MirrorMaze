@@ -18,11 +18,11 @@ public interface MirrorMazeService extends RemoteService {
 	
 	public boolean importJSONFromS3(String S3Bucket);
 
-	public ListResponse<Ami> getAmis(Long userId, String region, int startRow, int endRow);
+	public ListResponse<Ami> getAmis(String memberId, String region, int startRow, int endRow);
 
 	public Map<String, Long> getSoftwarePackagesPieData(String region);
 
 	public Map<String, Long> getAmiOwnersPieData(String region);
 
-	public int getNumberAmis(Long userId, String region); 
+	public int getNumberAmis(String memberId, String region); 
 }

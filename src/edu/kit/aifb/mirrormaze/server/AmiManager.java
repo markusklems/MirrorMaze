@@ -18,14 +18,15 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultIterator;
+import com.google.appengine.api.users.User;
 import com.google.gson.Gson;
 import com.googlecode.objectify.Key;
 
 import edu.kit.aifb.mirrormaze.client.datasources.responseModel.ListResponse;
 import edu.kit.aifb.mirrormaze.client.model.Ami;
 import edu.kit.aifb.mirrormaze.client.model.Language;
+import edu.kit.aifb.mirrormaze.client.model.Member;
 import edu.kit.aifb.mirrormaze.client.model.Software;
-import edu.kit.aifb.mirrormaze.client.model.User;
 import edu.kit.aifb.mirrormaze.client.model.UserRole;
 import edu.kit.aifb.mirrormaze.server.db.dao.MazeDAO;
 
@@ -42,29 +43,27 @@ public class AmiManager {
 		super();
 	}
 
-	
 	public static boolean saveAmi(String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,
 			String platform, String imageType) {
 
 		// Check for duplicate AMIs? TODO
-		
-			return dao.createAmi(repository, imageId,
-					imageLocation, imageOwnerAlias, ownerId, name, description,
-					architecture, platform, imageType);
+
+		return dao.createAmi(repository, imageId, imageLocation,
+				imageOwnerAlias, ownerId, name, description, architecture,
+				platform, imageType);
 	}
-	
-	
+
 	public static Ami saveOrGetAmi(String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
 			String name, String description, String architecture,
 			String platform, String imageType) {
 
 		// Check for duplicate AMIs? TODO
-		return dao.getOrCreateAmi(null, repository, imageId,
-				imageLocation, imageOwnerAlias, ownerId, name, description,
-				architecture, platform, imageType);
+		return dao.getOrCreateAmi(null, repository, imageId, imageLocation,
+				imageOwnerAlias, ownerId, name, description, architecture,
+				platform, imageType);
 	}
 
 	public static Software saveSoftware(String amiId, String repository,
@@ -122,18 +121,18 @@ public class AmiManager {
 	}
 
 	public static ListResponse<Ami> getAmis() {
-		return getAmis(UserRole.ADMIN.getDefaultUserId(), "all", 0, -1);
-	}
-	
-	public static ListResponse<Ami> getAmis(Long userId) {
-		return getAmis(userId, "all", 0, -1);
+		return getAmis(UserRole.ADMIN.getDefaultMemberId(), "all", 0, -1);
 	}
 
-	public static ListResponse<Ami> getAmis(Long userId, String region) {
-		return getAmis(userId, region, 0, -1);
+	public static ListResponse<Ami> getAmis(String memberId) {
+		return getAmis(memberId, "all", 0, -1);
 	}
 
-	public static ListResponse<Ami> getAmis(Long userId, String region,
+	public static ListResponse<Ami> getAmis(String memberId, String region) {
+		return getAmis(memberId, region, 0, -1);
+	}
+
+	public static ListResponse<Ami> getAmis(String memberId, String region,
 			int startRow, int endRow) {
 
 		log.finer("request for region " + region + " from " + startRow + " to "
@@ -143,7 +142,7 @@ public class AmiManager {
 		boolean regionAll = "all".equals(region) || "".equals(region)
 				|| region == null;
 
-		int total = getNumberAmis(userId, region);
+		int total = getNumberAmis(memberId, region);
 		endRow = endRow > total ? total : endRow;
 		int size = endRow - startRow > -1 ? endRow - startRow : 0;
 		if (size > 0)
@@ -245,15 +244,27 @@ public class AmiManager {
 		return true;
 	}
 
-	public static User getUser(Long userId) {
-		if(userId == UserRole.ADMIN.getDefaultUserId())
-			return new User("", UserRole.ADMIN);
-		return userId != null ? dao.ofy().get(User.class, userId) : null;
+	public static Member getMember(String memberId) {
+		if (memberId == UserRole.ADMIN.getDefaultMemberId())
+			return new Member("", UserRole.ADMIN);
+		return memberId != null ? dao.ofy().get(Member.class, memberId) : null;
 	}
 
-	public static int getNumberAmis(Long userId, String region) {
-		return getUser(userId) == null
-				|| getUser(userId).getRole() == UserRole.USER ? 10 : "all"
+	public static Member saveOrGetMember(User user) {
+
+		Member member = dao.ofy().get(Member.class, user.getEmail());
+		if (member == null) {
+			member = new Member(user.getEmail(), user.getNickname(),
+					UserRole.USER);
+			dao.ofy().put(member);
+			return member;
+		} else
+			return member;
+	}
+
+	public static int getNumberAmis(String memberId, String region) {
+		return getMember(memberId) == null
+				|| getMember(memberId).getRole() == UserRole.USER ? 10 : "all"
 				.equals(region) || "".equals(region) || region == null ? dao
 				.ofy().query(Ami.class).count() : dao.ofy().query(Ami.class)
 				.filter("repository", region).count();

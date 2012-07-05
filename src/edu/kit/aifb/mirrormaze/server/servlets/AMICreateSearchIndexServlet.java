@@ -46,11 +46,11 @@ public class AMICreateSearchIndexServlet extends HttpServlet {
 		Index idx = SearchServiceFactory.getSearchService().getIndex(indexSpec);
 
 		int amiCount = AmiManager.getNumberAmis(
-				UserRole.ADMIN.getDefaultUserId(), null);
+				UserRole.ADMIN.getDefaultMemberId(), null);
 
 		for (int i = 0; i < amiCount - 1; i++) {
 			List<Ami> amis = AmiManager.getAmis(
-					UserRole.ADMIN.getDefaultUserId(), null, i, i + 1)
+					UserRole.ADMIN.getDefaultMemberId(), null, i, i + 1)
 					.getList();
 
 			for (Ami ami : amis) {

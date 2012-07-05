@@ -9,18 +9,18 @@ package edu.kit.aifb.mirrormaze.client.model;
  */
 public enum UserRole {
 
-	USER("user", 0L), ADMIN("admin", -1L);
+	USER("user", "user@myownthemepark.appspot.com"), ADMIN("admin", "admin@myownthemepark.appspot.com");
 	
 	private String roleName;
 	
-	private Long defaultUserId;
+	private String defaultMemberId;
 
 	/**
 	 * @param roleName
 	 */
-	private UserRole(String roleName, Long defaultUserId) {
+	private UserRole(String roleName, String defaultMemberId) {
 		this.setRoleName(roleName);
-		this.setDefaultUserId(defaultUserId);
+		this.setDefaultMemberId(defaultMemberId);
 	}
 
 	/**
@@ -40,15 +40,15 @@ public enum UserRole {
 	/**
 	 * @return the defaultUserId
 	 */
-	public Long getDefaultUserId() {
-		return defaultUserId;
+	public String getDefaultMemberId() {
+		return defaultMemberId;
 	}
 
 	/**
 	 * @param defaultUserId the defaultUserId to set
 	 */
-	public void setDefaultUserId(Long defaultUserId) {
-		this.defaultUserId = defaultUserId;
+	public void setDefaultMemberId(String defaultMemberId) {
+		this.defaultMemberId = defaultMemberId;
 	}
 	
 	

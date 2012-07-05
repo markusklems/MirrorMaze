@@ -10,6 +10,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.visualization.client.AbstractDataTable;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
@@ -22,7 +23,6 @@ import com.smartgwt.client.data.Record;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.RecordComponentPoolingMode;
 import com.smartgwt.client.types.SummaryFunctionType;
-import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.form.DynamicForm;
@@ -43,6 +43,8 @@ import com.smartgwt.client.widgets.tab.events.TabSelectedEvent;
 import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
 
 import edu.kit.aifb.mirrormaze.client.datasources.AmisDataSource;
+import edu.kit.aifb.mirrormaze.client.model.LoginInfo;
+import edu.kit.aifb.mirrormaze.client.model.Member;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -89,11 +91,16 @@ public class MirrorMaze implements EntryPoint {
 	private final MirrorMazeServiceAsync mirrorMazeService = GWT
 			.create(MirrorMazeService.class);
 
+	private final LoginServiceAsync loginService = GWT
+			.create(LoginService.class);
+
 	/**
 	 * Data
 	 */
 
-	private Long userId;
+	private Member member;
+
+	private Anchor loginAnchor = new Anchor(true);
 
 	private PieChart pieAMIOwners;
 	private boolean pieAMIOwnersReady = false;
@@ -114,7 +121,34 @@ public class MirrorMaze implements EntryPoint {
 	 */
 	public void onModuleLoad() {
 
+		loginService.login(GWT.getHostPageBaseURL(),
+				new AsyncCallback<LoginInfo>() {
+					public void onFailure(Throwable error) {
+					}
+
+					public void onSuccess(LoginInfo result) {
+						member = result.getMember();
+						if (member != null)
+							amis.getCriteria().setAttribute("memberId",
+									member.getEmail());
+						loginAnchor.setEnabled(true);
+						if (result.isLoggedIn()) {
+							loginAnchor.setHref(result.getLogoutUrl());
+							loginAnchor.setText("logout");
+						} else {
+							loginAnchor.setHref(result.getLoginUrl());
+							loginAnchor.setText("login");
+						}
+
+					}
+				});
+
 		final Layout masterLayout = new VLayout();
+
+		HLayout loginLayout = new HLayout();
+		loginLayout.addMember(new Label("Login: "));
+		loginLayout.addMember(loginAnchor);
+		masterLayout.addMember(loginLayout);
 
 		tabs.setWidth100();
 		tabs.setHeight100();
@@ -339,22 +373,21 @@ public class MirrorMaze implements EntryPoint {
 	}
 
 	private void refreshAMINumber() {
-		mirrorMazeService.getNumberAmis(
-				amis.getCriteria().getAttributeAsLong("userId"), amis
-						.getCriteria().getAttribute("region"),
-				new AsyncCallback<Integer>() {
+		mirrorMazeService.getNumberAmis(amis.getCriteria()
+				.getAttributeAsString("memberId"), amis.getCriteria()
+				.getAttribute("region"), new AsyncCallback<Integer>() {
 
-					@Override
-					public void onFailure(Throwable caught) {
+			@Override
+			public void onFailure(Throwable caught) {
 
-					}
+			}
 
-					@Override
-					public void onSuccess(Integer result) {
-						if (result != null)
-							amiNumber.setContents(" " + result.toString());
-					}
-				});
+			@Override
+			public void onSuccess(Integer result) {
+				if (result != null)
+					amiNumber.setContents(" " + result.toString());
+			}
+		});
 	}
 
 	private void refreshPie() {

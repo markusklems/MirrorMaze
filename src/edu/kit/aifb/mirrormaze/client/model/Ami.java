@@ -2,10 +2,10 @@ package edu.kit.aifb.mirrormaze.client.model;
 
 import java.io.Serializable;
 
-import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import com.googlecode.objectify.annotation.Cached;
+import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Indexed;
 import com.googlecode.objectify.annotation.Unindexed;
 import com.googlecode.objectify.condition.IfEmptyString;
