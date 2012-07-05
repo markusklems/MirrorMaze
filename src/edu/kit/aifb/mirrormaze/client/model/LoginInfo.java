@@ -21,7 +21,7 @@ public class LoginInfo implements Serializable {
 	private String loginUrl;
 
 	private String logoutUrl;
-	
+
 	private Member member;
 
 	public boolean isLoggedIn() {
@@ -56,9 +56,26 @@ public class LoginInfo implements Serializable {
 	}
 
 	/**
-	 * @param member the member to set
+	 * @param member
+	 *            the member to set
 	 */
 	public void setMember(Member member) {
 		this.member = member;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return (getMember() != null ? getMember().getEmail() + "/"
+				+ getMember().getNickname() + "[" + getMember().getRole() + "]"
+				: "Unknown Member")
+				+ ", "
+				+ (isLoggedIn() ? "logged in, URL: " + getLogoutUrl()
+						: "not logged in, URL: " + getLoginUrl());
+	}
+
 }

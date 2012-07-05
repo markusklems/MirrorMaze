@@ -257,7 +257,7 @@ public class AmiManager {
 	}
 
 	public static Member saveOrGetMember(User user) {
-
+		if(user == null) return null;
 		try {
 			return dao.ofy().get(Member.class, user.getEmail());
 		} catch (NotFoundException e) {
@@ -267,7 +267,8 @@ public class AmiManager {
 								new Member(user.getEmail(), user.getNickname(),
 										UserRole.USER)));
 			} catch (Exception ex) {
-				return null;
+				return new Member(user.getEmail(), user.getNickname(),
+						UserRole.USER);
 			}
 		}
 
@@ -275,17 +276,18 @@ public class AmiManager {
 
 	public static int getNumberAmis(String memberId, String region) {
 		return getMember(memberId) == null
-				|| getMember(memberId).getRole() == UserRole.USER ? 10 : getNumberAmis(region);
+				|| getMember(memberId).getRole() == UserRole.USER ? 10
+				: getNumberAmis(region);
 
 	}
 
 	public static int getNumberAmis(String region) {
 		try {
-		return "all".equals(region) || "".equals(region) || region == null ? dao
-				.ofy().query(Ami.class).count()
-				: dao.ofy().query(Ami.class).filter("repository", region)
-						.count();
-		} catch(Exception e) {
+			return "all".equals(region) || "".equals(region) || region == null ? dao
+					.ofy().query(Ami.class).count()
+					: dao.ofy().query(Ami.class).filter("repository", region)
+							.count();
+		} catch (Exception e) {
 			return 0;
 		}
 

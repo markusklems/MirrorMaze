@@ -1,5 +1,7 @@
 package edu.kit.aifb.mirrormaze.server.services;
 
+import java.util.logging.Logger;
+
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -52,12 +54,13 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 	 * 
 	 */
 	private static final long serialVersionUID = 1447714256662875710L;
+	
+	private Logger log = Logger.getLogger(LoginServiceImpl.class.getName());
 
-	UserService userService = UserServiceFactory.getUserService();
+	private UserService userService = UserServiceFactory.getUserService();
 
 	@Override
 	public LoginInfo login(String requestUri) {
-		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();
 		LoginInfo loginInfo = new LoginInfo();
 
@@ -69,6 +72,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements LoginServi
 			loginInfo.setLoggedIn(false);
 			loginInfo.setLoginUrl(userService.createLoginURL(requestUri));
 		}
+		log.info("logged in " + loginInfo);
+		
 		return loginInfo;
 	}
 

@@ -100,7 +100,8 @@ public class MirrorMaze implements EntryPoint {
 
 	private Member member;
 
-	private Anchor loginAnchor = new Anchor(true);
+	private Label welcomeLabel = new Label("Checking status of ");
+	private Anchor loginAnchor = new Anchor(" login");
 
 	private PieChart pieAMIOwners;
 	private boolean pieAMIOwnersReady = false;
@@ -124,6 +125,9 @@ public class MirrorMaze implements EntryPoint {
 		loginService.login(GWT.getHostPageBaseURL(),
 				new AsyncCallback<LoginInfo>() {
 					public void onFailure(Throwable error) {
+						welcomeLabel.setContents("");
+						loginAnchor.setHref("/_ah/login");
+						loginAnchor.setText("Hey fellow, login!");
 					}
 
 					public void onSuccess(LoginInfo result) {
@@ -132,12 +136,14 @@ public class MirrorMaze implements EntryPoint {
 							amis.getCriteria().setAttribute("memberId",
 									member.getEmail());
 						loginAnchor.setEnabled(true);
-						if (result.isLoggedIn()) {
+						if (result.isLoggedIn() && member != null) {
+							welcomeLabel.setContents("Welcome, " + member.getNickname() + "! ");
 							loginAnchor.setHref(result.getLogoutUrl());
-							loginAnchor.setText("logout");
+							loginAnchor.setText(" (logout)");
 						} else {
+							welcomeLabel.setContents("");
 							loginAnchor.setHref(result.getLoginUrl());
-							loginAnchor.setText("login");
+							loginAnchor.setText("Hey fellow, login!");
 						}
 
 					}
@@ -146,7 +152,10 @@ public class MirrorMaze implements EntryPoint {
 		final Layout masterLayout = new VLayout();
 
 		HLayout loginLayout = new HLayout();
-		loginLayout.addMember(new Label("Login: "));
+		welcomeLabel.setAutoWidth();
+		welcomeLabel.setWrap(false);
+		loginLayout.addMember(welcomeLabel);
+		loginAnchor.setWordWrap(false);
 		loginLayout.addMember(loginAnchor);
 		masterLayout.addMember(loginLayout);
 
