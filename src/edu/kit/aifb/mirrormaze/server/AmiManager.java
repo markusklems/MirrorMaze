@@ -21,6 +21,7 @@ import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
 import com.google.gson.Gson;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.NotFoundException;
 
 import edu.kit.aifb.mirrormaze.client.datasources.responseModel.ListResponse;
 import edu.kit.aifb.mirrormaze.client.model.Ami;
@@ -135,28 +136,33 @@ public class AmiManager {
 	public static ListResponse<Ami> getAmis(String memberId, String region,
 			int startRow, int endRow) {
 
-		log.finer("request for region " + region + " from " + startRow + " to "
-				+ endRow);
+		try {
+			log.finer("request for region " + region + " from " + startRow
+					+ " to " + endRow);
 
-		QueryResultIterable<Key<Ami>> keys = null;
-		boolean regionAll = "all".equals(region) || "".equals(region)
-				|| region == null;
+			QueryResultIterable<Key<Ami>> keys = null;
+			boolean regionAll = "all".equals(region) || "".equals(region)
+					|| region == null;
 
-		int total = getNumberAmis(memberId, region);
-		endRow = endRow > total ? total : endRow;
-		int size = endRow - startRow > -1 ? endRow - startRow : 0;
-		if (size > 0)
-			keys = regionAll ? dao.ofy().query(Ami.class).offset(startRow)
-					.limit(size).chunkSize(size).fetchKeys() : dao.ofy()
-					.query(Ami.class).filter("repository", region)
-					.offset(startRow).limit(size).chunkSize(size).fetchKeys();
+			int total = getNumberAmis(memberId, region);
+			endRow = endRow > total ? total : endRow;
+			int size = endRow - startRow > -1 ? endRow - startRow : 0;
+			if (size > 0)
+				keys = regionAll ? dao.ofy().query(Ami.class).offset(startRow)
+						.limit(size).chunkSize(size).fetchKeys() : dao.ofy()
+						.query(Ami.class).filter("repository", region)
+						.offset(startRow).limit(size).chunkSize(size)
+						.fetchKeys();
 
-		log.fine("fetched for region " + region + " # " + size
-				+ " from a total of " + total + " records: " + keys);
+			log.fine("fetched for region " + region + " # " + size
+					+ " from a total of " + total + " records: " + keys);
 
-		return keys != null ? new ListResponse<Ami>(total, new ArrayList<Ami>(
-				dao.ofy().get(keys).values())) : new ListResponse<Ami>(total,
-				new ArrayList<Ami>());
+			return keys != null ? new ListResponse<Ami>(total,
+					new ArrayList<Ami>(dao.ofy().get(keys).values()))
+					: new ListResponse<Ami>(total, new ArrayList<Ami>());
+		} catch (Exception e) {
+			return new ListResponse<Ami>(0, new ArrayList<Ami>());
+		}
 	}
 
 	public static Map<String, Long> getAmiOwnersPieData(String region) {
@@ -252,22 +258,36 @@ public class AmiManager {
 
 	public static Member saveOrGetMember(User user) {
 
-		Member member = dao.ofy().get(Member.class, user.getEmail());
-		if (member == null) {
-			member = new Member(user.getEmail(), user.getNickname(),
-					UserRole.USER);
-			dao.ofy().put(member);
-			return member;
-		} else
-			return member;
+		try {
+			return dao.ofy().get(Member.class, user.getEmail());
+		} catch (NotFoundException e) {
+			try {
+				return dao.ofy().get(
+						dao.ofy().put(
+								new Member(user.getEmail(), user.getNickname(),
+										UserRole.USER)));
+			} catch (Exception ex) {
+				return null;
+			}
+		}
+
 	}
 
 	public static int getNumberAmis(String memberId, String region) {
 		return getMember(memberId) == null
-				|| getMember(memberId).getRole() == UserRole.USER ? 10 : "all"
-				.equals(region) || "".equals(region) || region == null ? dao
-				.ofy().query(Ami.class).count() : dao.ofy().query(Ami.class)
-				.filter("repository", region).count();
+				|| getMember(memberId).getRole() == UserRole.USER ? 10 : getNumberAmis(region);
+
+	}
+
+	public static int getNumberAmis(String region) {
+		try {
+		return "all".equals(region) || "".equals(region) || region == null ? dao
+				.ofy().query(Ami.class).count()
+				: dao.ofy().query(Ami.class).filter("repository", region)
+						.count();
+		} catch(Exception e) {
+			return 0;
+		}
 
 	}
 }

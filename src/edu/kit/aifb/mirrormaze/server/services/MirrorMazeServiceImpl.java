@@ -34,7 +34,7 @@ public class MirrorMazeServiceImpl extends RemoteServiceServlet implements
 	
 	@Override
 	public int getNumberAmis(String memberId, String region) {
-		return AmiManager.getNumberAmis(memberId, region);
+		return AmiManager.getNumberAmis(region);
 	}
 	
 	@Override
