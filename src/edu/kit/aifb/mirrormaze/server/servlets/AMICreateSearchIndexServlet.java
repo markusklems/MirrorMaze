@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.mortbay.log.Log;
 
-import com.google.appengine.api.search.AddDocumentsResponse;
+import com.google.appengine.api.search.AddResponse;
 import com.google.appengine.api.search.Consistency;
 import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
@@ -54,7 +54,7 @@ public class AMICreateSearchIndexServlet extends HttpServlet {
 					.getList();
 
 			for (Ami ami : amis) {
-				AddDocumentsResponse adr = idx.add(Document
+				AddResponse adr = idx.add(Document
 						.newBuilder()
 						.setId(ami.getRepository() + "-" + ami.getImageId())
 						.addField(
@@ -66,10 +66,11 @@ public class AMICreateSearchIndexServlet extends HttpServlet {
 						.addField(
 								Field.newBuilder().setName("name")
 										.setText(ami.getName())).build());
-				Log.info("added documents to index: " + adr.getDocumentIds());
+				Log.info("added documents to index: " + ami.getRepository()
+						+ "-" + ami.getImageId());
 				resp.getWriter().println(
-						adr.getResults() + " (id: " + adr.getDocumentIds()
-								+ ")");
+						adr + " (id: " + ami.getRepository() + "-"
+								+ ami.getImageId() + ")");
 
 			}
 		}
