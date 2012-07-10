@@ -3,13 +3,13 @@
 	<cron>
 		<url>/mirrormaze/updateAMI</url>
 		<description>trigger AMI crawler</description>
-		<schedule>every day 07:15</schedule>
+		<schedule>every day 07:25</schedule>
 		<target>ami-crawler</target>
 	</cron>
 	<cron>
 		<url>/mirrormaze/createSearchIndexAMI</url>
 		<description>trigger AMI crawler</description>
-		<schedule>every day 08:00</schedule>
+		<schedule>every day 07:05</schedule>
 		<target>ami-crawler</target>
 	</cron>
 </cronentries>

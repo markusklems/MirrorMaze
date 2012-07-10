@@ -18,10 +18,19 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultIterator;
+import com.google.appengine.api.search.Index;
+import com.google.appengine.api.search.IndexSpec;
+import com.google.appengine.api.search.Query;
+import com.google.appengine.api.search.QueryOptions;
+import com.google.appengine.api.search.Results;
+import com.google.appengine.api.search.ScoredDocument;
+import com.google.appengine.api.search.SearchService;
+import com.google.appengine.api.search.SearchServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.gson.Gson;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
+import com.smartgwt.client.data.Criteria;
 
 import edu.kit.aifb.mirrormaze.client.datasources.responseModel.ListResponse;
 import edu.kit.aifb.mirrormaze.client.model.Ami;
@@ -133,6 +142,38 @@ public class AmiManager {
 		return getAmis(memberId, region, 0, -1);
 	}
 
+	public static ListResponse<Ami> getAmis(Map<String, Object> criteria) {
+		return getAmis(criteria, 0, -1);
+	}
+
+	public static ListResponse<Ami> getAmis(Map<String, Object> criteria,
+			int startRow, int endRow) {
+		String region = (String) criteria.get("region");
+		String memberId = (String) criteria.get("memberId");
+		String query = (String) criteria.get("query");
+		if (query == null)
+			return getAmis(memberId, region, startRow, endRow);
+		return findAmis(query, region);
+	}
+
+	public static ListResponse<Ami> findAmis(String query, String region) {
+		List<Ami> amis = new ArrayList<Ami>();
+
+		try {
+			log.info("searching for amis with query " + query);
+			SearchService ss = SearchServiceFactory.getSearchService();
+			Index idx = ss.getIndex(IndexSpec.newBuilder().setName("amiIndex")
+					.build());
+			Results<ScoredDocument> results = idx.search(Query.newBuilder()
+					.build(query));
+			for (ScoredDocument sd : results.getResults())
+				amis.add(dao.ofy().get(Ami.class, new Long(sd.getId())));
+		} catch (Exception e) {
+		}
+		return new ListResponse<Ami>(amis.size(), amis);
+
+	}
+
 	public static ListResponse<Ami> getAmis(String memberId, String region,
 			int startRow, int endRow) {
 
@@ -144,7 +185,7 @@ public class AmiManager {
 			boolean regionAll = "all".equals(region) || "".equals(region)
 					|| region == null;
 
-			int total = getNumberAmis(memberId, region);
+			int total = getNumberAmis(memberId, region, null);
 			endRow = endRow > total ? total : endRow;
 			int size = endRow - startRow > -1 ? endRow - startRow : 0;
 			if (size > 0)
@@ -257,7 +298,8 @@ public class AmiManager {
 	}
 
 	public static Member saveOrGetMember(User user) {
-		if(user == null) return null;
+		if (user == null)
+			return null;
 		try {
 			return dao.ofy().get(Member.class, user.getEmail());
 		} catch (NotFoundException e) {
@@ -274,22 +316,42 @@ public class AmiManager {
 
 	}
 
-	public static int getNumberAmis(String memberId, String region) {
-		return getMember(memberId) == null
-				|| getMember(memberId).getRole() == UserRole.USER ? 10
-				: getNumberAmis(region);
-
+	public static int getNumberAmis(Map<String, Object> criteria) {
+		String region = (String) criteria.get("region");
+		String memberId = (String) criteria.get("memberId");
+		String query = (String) criteria.get("query");
+		return getNumberAmis(memberId, region, query);
 	}
 
-	public static int getNumberAmis(String region) {
+	public static int getNumberAmis(String memberId, String region, String query) {
+
+		if (getMember(memberId) == null
+				|| getMember(memberId).getRole() == UserRole.USER)
+			return 10;
+
 		try {
-			return "all".equals(region) || "".equals(region) || region == null ? dao
-					.ofy().query(Ami.class).count()
-					: dao.ofy().query(Ami.class).filter("repository", region)
-							.count();
+
+			if (query == null)
+				return "all".equals(region) || "".equals(region)
+						|| region == null ? dao.ofy().query(Ami.class).count()
+						: dao.ofy().query(Ami.class)
+								.filter("repository", region).count();
+
+			SearchService ss = SearchServiceFactory.getSearchService();
+			Index idx = ss.getIndex(IndexSpec.newBuilder().setName("amiIndex")
+					.build());
+			Results<ScoredDocument> results = idx.search(Query
+					.newBuilder()
+					.setOptions(
+							QueryOptions.newBuilder().setReturningIdsOnly(true)
+									.build()).build(query));
+
+			return results.getNumberReturned();
+
 		} catch (Exception e) {
 			return 0;
 		}
 
 	}
+
 }

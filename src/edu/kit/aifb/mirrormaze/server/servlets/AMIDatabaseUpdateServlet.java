@@ -18,6 +18,7 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.Image;
+import com.amazonaws.services.ec2.model.Region;
 
 import edu.kit.aifb.mirrormaze.server.AmiManager;
 
@@ -80,31 +81,37 @@ public class AMIDatabaseUpdateServlet extends HttpServlet {
 				.getResourceAsStream("AwsCredentials.properties"));
 
 		AmazonEC2Client ec2 = new AmazonEC2Client(credentials);
-		for (Repository repo : Repository.values()) {
+		int addedImages = 0;
+		for (Region repo : ec2.describeRegions().getRegions()) {
 			try {
-				ec2.setEndpoint(repo.getName());
+				ec2.setEndpoint(repo.getEndpoint());
+				log.info("crawling repo " + repo.getRegionName() + " at "
+						+ repo.getEndpoint());
+				resp.getWriter().println(
+						"crawling repo " + repo.getRegionName() + " at "
+								+ repo.getEndpoint());
 				DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest();
 				DescribeImagesResult result = ec2
 						.describeImages(describeImagesRequest);
 				for (Image img : result.getImages()) {
 
-					boolean added = AmiManager.saveAmi(repo.getName(),
+					boolean added = AmiManager.saveAmi(repo.getEndpoint(),
 							img.getImageId(), img.getImageLocation(),
 							img.getImageOwnerAlias(), img.getOwnerId(),
 							img.getName(), img.getDescription(),
 							img.getArchitecture(), img.getPlatform(),
 							img.getImageType());
 
-					if (added) {
-						log.info("added " + img.getImageId() + " to database.");
-						resp.getWriter().println(
-								"added " + img.getImageId() + " to database.");
-					}
+					if (added)
+						addedImages++;
+
 				}
+				System.gc();
 			} catch (Exception e) {
 				log.log(Level.WARNING, e.getLocalizedMessage(), e.getCause());
 			}
 		}
+		log.info("added " + addedImages + " images to database.");
 	}
 
 	public static void main(String[] arg) {

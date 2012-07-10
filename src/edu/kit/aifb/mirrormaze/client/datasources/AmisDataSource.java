@@ -1,6 +1,7 @@
 package edu.kit.aifb.mirrormaze.client.datasources;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -56,6 +57,7 @@ public class AmisDataSource extends GwtRpcDataSource {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	protected void executeFetch(final String requestId, DSRequest request,
 			final DSResponse response) {
@@ -66,9 +68,8 @@ public class AmisDataSource extends GwtRpcDataSource {
 		int end = request.getEndRow() != null ? request.getEndRow().intValue()
 				: 0;
 
-		mirrorMazeService.getAmis(
-				request.getCriteria().getAttributeAsString("memberId"), request
-						.getCriteria().getAttribute("region"), start, end,
+		mirrorMazeService.getAmis((Map<String, Object>) request.getCriteria()
+				.getValues(), start, end,
 				new AsyncCallback<ListResponse<Ami>>() {
 
 					@Override

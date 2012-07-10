@@ -27,6 +27,7 @@ import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ComboBoxItem;
+import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
 import com.smartgwt.client.widgets.form.fields.events.KeyPressEvent;
@@ -137,7 +138,8 @@ public class MirrorMaze implements EntryPoint {
 									member.getEmail());
 						loginAnchor.setEnabled(true);
 						if (result.isLoggedIn() && member != null) {
-							welcomeLabel.setContents("Welcome, " + member.getNickname() + "! ");
+							welcomeLabel.setContents("Welcome, "
+									+ member.getNickname() + "! ");
 							loginAnchor.setHref(result.getLogoutUrl());
 							loginAnchor.setText(" (logout)");
 						} else {
@@ -158,6 +160,25 @@ public class MirrorMaze implements EntryPoint {
 		loginAnchor.setWordWrap(false);
 		loginLayout.addMember(loginAnchor);
 		masterLayout.addMember(loginLayout);
+		
+		HLayout searchLayout = new HLayout();
+		DynamicForm searchForm = new DynamicForm();
+		final TextItem searchQuery = new TextItem("Search");
+		searchQuery.addKeyPressHandler(new KeyPressHandler() {
+			
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				if("Enter".equals(event.getKeyName())) {
+					amis.getCriteria().setAttribute("query", searchQuery.getValueAsString());
+					refresh();
+				}
+					
+			}
+		});
+		searchForm.setFields(searchQuery);
+		searchLayout.addMember(searchForm);
+		masterLayout.addMember(searchLayout);
+		
 
 		tabs.setWidth100();
 		tabs.setHeight100();
@@ -193,12 +214,13 @@ public class MirrorMaze implements EntryPoint {
 			public void onKeyPress(KeyPressEvent event) {
 				try {
 					if (event.getKeyName().equals("Enter"))
-						amis.setCriteria(new Criteria("region",
+						amis.getCriteria().setAttribute(
+								"region",
 								Repository
 										.valueOf(
 												(String) regionFilter
 														.getDisplayValue())
-										.getName()));
+										.getName());
 
 					refresh();
 				} catch (Exception e) {
@@ -381,10 +403,9 @@ public class MirrorMaze implements EntryPoint {
 		refreshAMINumber();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void refreshAMINumber() {
-		mirrorMazeService.getNumberAmis(amis.getCriteria()
-				.getAttributeAsString("memberId"), amis.getCriteria()
-				.getAttribute("region"), new AsyncCallback<Integer>() {
+		mirrorMazeService.getNumberAmis((Map<String,Object>) amis.getCriteria().getValues(), new AsyncCallback<Integer>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
