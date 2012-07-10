@@ -1,5 +1,6 @@
 package edu.kit.aifb.mirrormaze.client.datasources;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +58,6 @@ public class AmisDataSource extends GwtRpcDataSource {
 		return result;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void executeFetch(final String requestId, DSRequest request,
 			final DSResponse response) {
@@ -68,8 +68,12 @@ public class AmisDataSource extends GwtRpcDataSource {
 		int end = request.getEndRow() != null ? request.getEndRow().intValue()
 				: 0;
 
-		mirrorMazeService.getAmis((Map<String, Object>) request.getCriteria()
-				.getValues(), start, end,
+		Map<String, Object> criteria = new HashMap<String, Object>();
+		for (String attribute : request.getCriteria().getAttributes())
+			criteria.put(attribute,
+					request.getCriteria().getAttributeAsObject(attribute));
+
+		mirrorMazeService.getAmis(criteria, start, end,
 				new AsyncCallback<ListResponse<Ami>>() {
 
 					@Override

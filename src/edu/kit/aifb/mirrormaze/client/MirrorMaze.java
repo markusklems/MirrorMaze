@@ -160,25 +160,25 @@ public class MirrorMaze implements EntryPoint {
 		loginAnchor.setWordWrap(false);
 		loginLayout.addMember(loginAnchor);
 		masterLayout.addMember(loginLayout);
-		
+
 		HLayout searchLayout = new HLayout();
 		DynamicForm searchForm = new DynamicForm();
 		final TextItem searchQuery = new TextItem("Search");
 		searchQuery.addKeyPressHandler(new KeyPressHandler() {
-			
+
 			@Override
 			public void onKeyPress(KeyPressEvent event) {
-				if("Enter".equals(event.getKeyName())) {
-					amis.getCriteria().setAttribute("query", searchQuery.getValueAsString());
+				if ("Enter".equals(event.getKeyName())) {
+					amis.getCriteria().setAttribute("query",
+							searchQuery.getValueAsString());
 					refresh();
 				}
-					
+
 			}
 		});
 		searchForm.setFields(searchQuery);
 		searchLayout.addMember(searchForm);
 		masterLayout.addMember(searchLayout);
-		
 
 		tabs.setWidth100();
 		tabs.setHeight100();
@@ -403,9 +403,13 @@ public class MirrorMaze implements EntryPoint {
 		refreshAMINumber();
 	}
 
-	@SuppressWarnings("unchecked")
 	private void refreshAMINumber() {
-		mirrorMazeService.getNumberAmis((Map<String,Object>) amis.getCriteria().getValues(), new AsyncCallback<Integer>() {
+		Map<String, Object> criteria = new HashMap<String, Object>();
+		for (String attribute : amis.getCriteria().getAttributes())
+			criteria.put(attribute,
+					amis.getCriteria().getAttributeAsObject(attribute));
+
+		mirrorMazeService.getNumberAmis(criteria, new AsyncCallback<Integer>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
