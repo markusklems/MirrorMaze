@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
 	<cron>
-		<url>/mirrormaze/updateAMI</url>
+		<url>/crawler/updateAMI</url>
 		<description>trigger AMI crawler</description>
 		<schedule>every day 07:25</schedule>
 		<target>ami-crawler</target>
 	</cron>
 	<cron>
-		<url>/mirrormaze/createSearchIndexAMI</url>
+		<url>/crawler/createSearchIndexAMI</url>
 		<description>trigger AMI crawler</description>
-		<schedule>every day 07:05</schedule>
+		<schedule>every 1 hours from 01:00 to 06:00</schedule>
+		<target>ami-crawler</target>
+	</cron>
+	<cron>
+		<url>/crawler/createSearchIndexAMI</url>
+		<description>trigger AMI crawler</description>
+		<schedule>every day 15:40</schedule>
 		<target>ami-crawler</target>
 	</cron>
 </cronentries>

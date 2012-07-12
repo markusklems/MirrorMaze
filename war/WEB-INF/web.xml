@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	version="2.5" xmlns="http://java.sun.com/xml/ns/javaee">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	version="2.5"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
 	<!-- <context-param> <!// max size of the upload request //> <param-name>maxSize</param-name> 
 		<param-value>3145728</param-value> </context-param> -->
@@ -16,7 +15,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 
 	<!-- Default page to serve -->
 	<welcome-file-list>
-		<welcome-file>MirrorMaze.html</welcome-file>
+		<welcome-file>Crawler.html</welcome-file>
 	</welcome-file-list>
 
 	<!-- Filters -->
@@ -37,52 +36,52 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	<!-- Servlets -->
 	<servlet>
 		<servlet-name>mazeServlet</servlet-name>
-		<servlet-class>edu.kit.aifb.mirrormaze.server.services.MirrorMazeServiceImpl</servlet-class>
+		<servlet-class>de.eorganization.crawler.server.services.CrawlerServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>mazeServlet</servlet-name>
-		<url-pattern>/mirrormaze/maze</url-pattern>
+		<url-pattern>/crawler/crawler</url-pattern>
 	</servlet-mapping>
 	<servlet>
 		<servlet-name>loginServlet</servlet-name>
-		<servlet-class>edu.kit.aifb.mirrormaze.server.services.LoginServiceImpl</servlet-class>
+		<servlet-class>de.eorganization.crawler.server.services.LoginServiceImpl</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>loginServlet</servlet-name>
-		<url-pattern>/mirrormaze/login</url-pattern>
+		<url-pattern>/crawler/login</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
 		<servlet-name>uploadJSONServlet</servlet-name>
-		<servlet-class>edu.kit.aifb.mirrormaze.server.servlets.JSONImportServlet</servlet-class>
+		<servlet-class>de.eorganization.crawler.server.servlets.JSONImportServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>uploadJSONServlet</servlet-name>
-		<url-pattern>/mirrormaze/importJSON</url-pattern>
+		<url-pattern>/crawler/importJSON</url-pattern>
 	</servlet-mapping>
 	<servlet>
 		<servlet-name>uploadCSVServlet</servlet-name>
-		<servlet-class>edu.kit.aifb.mirrormaze.server.servlets.CSVImportServlet</servlet-class>
+		<servlet-class>de.eorganization.crawler.server.servlets.CSVImportServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>uploadCSVServlet</servlet-name>
-		<url-pattern>/mirrormaze/importCSV</url-pattern>
+		<url-pattern>/crawler/importCSV</url-pattern>
 	</servlet-mapping>
 	<servlet>
 		<servlet-name>AMIDatabaseUpdateServlet</servlet-name>
-		<servlet-class>edu.kit.aifb.mirrormaze.server.servlets.AMIDatabaseUpdateServlet</servlet-class>
+		<servlet-class>de.eorganization.crawler.server.servlets.AMIDatabaseUpdateServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>AMIDatabaseUpdateServlet</servlet-name>
-		<url-pattern>/mirrormaze/updateAMI</url-pattern>
+		<url-pattern>/crawler/updateAMI</url-pattern>
 	</servlet-mapping>
 	<servlet>
 		<servlet-name>AMICreateSearchIndexServlet</servlet-name>
-		<servlet-class>edu.kit.aifb.mirrormaze.server.servlets.AMICreateSearchIndexServlet</servlet-class>
+		<servlet-class>de.eorganization.crawler.server.servlets.AMICreateSearchIndexServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>AMICreateSearchIndexServlet</servlet-name>
-		<url-pattern>/mirrormaze/createSearchIndexAMI</url-pattern>
+		<url-pattern>/crawler/createSearchIndexAMI</url-pattern>
 	</servlet-mapping>
 
 	<servlet>
@@ -155,4 +154,18 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 			<role-name>admin</role-name>
 		</auth-constraint>
 	</security-constraint>
+	<servlet>
+		<servlet-name>SystemServiceServlet</servlet-name>
+		<servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
+		<init-param>
+			<param-name>services</param-name>
+			<param-value />
+		</init-param>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>SystemServiceServlet</servlet-name>
+		<url-pattern>/_ah/spi/*</url-pattern>
+	</servlet-mapping>
+
 </web-app>

@@ -1,0 +1,35 @@
+package de.eorganization.crawler.client;
+
+import java.util.Map;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
+
+import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
+import de.eorganization.crawler.client.model.Ami;
+
+
+public interface CrawlerServiceAsync {
+
+	void saveAmi(String repository, String imageId, String imageLocation,
+			String imageOwnerAlias, String ownerId, String name,
+			String description, String architecture, String platform,
+			String imageType, AsyncCallback<Void> callback);
+
+	void importJSONFromS3(String S3Bucket, AsyncCallback<Boolean> callback);
+
+	void getAmis(Map<String, Object> criteria, int startRow, int endRow,
+			AsyncCallback<ListResponse<Ami>> callback);
+
+	void getSoftwarePackagesPieData(String region,
+			AsyncCallback<Map<String, Long>> callback);
+
+	void getAmiOwnersPieData(String region,
+			AsyncCallback<Map<String, Long>> callback);
+
+	void getNumberAmis(Map<String, Object> criteria,
+			AsyncCallback<Integer> callback);
+
+	void getNumberAllAmis(Map<String, Object> criteria,
+			AsyncCallback<Integer> callback);
+
+}
