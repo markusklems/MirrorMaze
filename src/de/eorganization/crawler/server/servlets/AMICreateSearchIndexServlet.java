@@ -50,12 +50,13 @@ public class AMICreateSearchIndexServlet extends HttpServlet {
 		IndexSpec indexSpec = IndexSpec.newBuilder().setName("amiIndex")
 				.setConsistency(Consistency.PER_DOCUMENT).build();
 		Index idx = SearchServiceFactory.getSearchService().getIndex(indexSpec);
-		Iterator<Document> docs = idx.listDocuments(
-				ListRequest.newBuilder().setReturningIdsOnly(true).build())
-				.iterator();
-		while (docs.hasNext())
-			idx.removeAsync(docs.next().getId());
-		log.info("Cleared index " + idx.getNamespace() + "/" + idx.getName());
+		/*
+		 * Iterator<Document> docs = idx.listDocuments(
+		 * ListRequest.newBuilder().setReturningIdsOnly(true).build())
+		 * .iterator(); while (docs.hasNext())
+		 * idx.removeAsync(docs.next().getId()); log.info("Cleared index " +
+		 * idx.getNamespace() + "/" + idx.getName());
+		 */
 
 		log.info("Adding documents to index " + idx.getNamespace() + "/"
 				+ idx.getName());

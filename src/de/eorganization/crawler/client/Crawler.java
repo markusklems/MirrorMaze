@@ -20,10 +20,14 @@ import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
 import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.Record;
+import com.smartgwt.client.types.Alignment;
+import com.smartgwt.client.types.BkgndRepeat;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.RecordComponentPoolingMode;
 import com.smartgwt.client.types.SummaryFunctionType;
+import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.widgets.Canvas;
+import com.smartgwt.client.widgets.Img;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ComboBoxItem;
@@ -46,7 +50,6 @@ import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
 import de.eorganization.crawler.client.datasources.AmisDataSource;
 import de.eorganization.crawler.client.model.LoginInfo;
 import de.eorganization.crawler.client.model.Member;
-
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -153,14 +156,28 @@ public class Crawler implements EntryPoint {
 				});
 
 		final Layout masterLayout = new VLayout();
+		final Layout top = new HLayout();
+		top.setWidth100();
+		top.setBackgroundImage("/clouds.png");
+		top.setBackgroundPosition("bottom");
+		top.setBackgroundRepeat(BkgndRepeat.REPEAT_X);
+		top.setAlign(Alignment.LEFT);
 
-		HLayout loginLayout = new HLayout();
+		Img crawlerLogo = new Img("/crawler_logo.png", 397, 150);
+		crawlerLogo.setLayoutAlign(VerticalAlignment.TOP);
+		
+		HLayout login = new HLayout();
+		login.setAlign(Alignment.RIGHT);
 		welcomeLabel.setAutoWidth();
 		welcomeLabel.setWrap(false);
-		loginLayout.addMember(welcomeLabel);
+		login.addMember(welcomeLabel);
 		loginAnchor.setWordWrap(false);
-		loginLayout.addMember(loginAnchor);
-		masterLayout.addMember(loginLayout);
+		login.addMember(loginAnchor);
+		
+		top.addMember(crawlerLogo);
+		top.addMember(login);
+		
+		masterLayout.addMember(top);
 
 		HLayout searchLayout = new HLayout();
 		DynamicForm searchForm = new DynamicForm();
@@ -196,7 +213,7 @@ public class Crawler implements EntryPoint {
 		for (Repository repo : Repository.values())
 			regions.put(repo.getName(), repo.name());
 		regionFilter.setValueMap(regions);
-		regionFilter.setDefaultValue(Repository.EU_1.getName());
+		regionFilter.setDefaultValue(Repository.US_EAST1.getName());
 		regionFilter.addChangedHandler(new ChangedHandler() {
 
 			@Override
@@ -384,17 +401,9 @@ public class Crawler implements EntryPoint {
 
 		masterLayout.addMember(tabs);
 
-		if ("standalone".equals(Window.Location.getParameter("mode"))) {
-			RootPanel.get().getElement().getElementsByTagName("div").getItem(0)
-					.removeFromParent();
-			masterLayout.setWidth100();
-			masterLayout.setHeight100();
-			masterLayout.draw();
-		} else {
-			masterLayout.setWidth(970);
-			masterLayout.setHeight(700);
-			RootPanel.get("main").add(masterLayout);
-		}
+		masterLayout.setWidth100();
+		masterLayout.setHeight100();
+		masterLayout.draw();
 
 		refresh();
 	}

@@ -3,6 +3,8 @@ package de.eorganization.crawler.client.datasources;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -18,6 +20,8 @@ import de.eorganization.crawler.client.model.Ami;
 
 
 public class AmisDataSource extends GwtRpcDataSource {
+	
+	private Logger log = Logger.getLogger(AmisDataSource.class.getName());
 
 	/**
 	 * @param region
@@ -79,13 +83,15 @@ public class AmisDataSource extends GwtRpcDataSource {
 
 					@Override
 					public void onSuccess(ListResponse<Ami> result) {
+						log.info("got result for ami data source " + result);
 						response.setData(createListGridRecords(result.getList()));
-						response.setTotalRows(result.getList().size());
+						response.setTotalRows(result.getTotalRecords());
 						processResponse(requestId, response);
 					}
 
 					@Override
 					public void onFailure(Throwable caught) {
+						log.log(Level.WARNING, caught.getLocalizedMessage(), caught);
 					}
 				});
 	}

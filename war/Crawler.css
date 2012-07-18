@@ -1,4 +1,6 @@
 /** Add css rules here for your application. */
-
-
-
+body {
+	background-color: #ffffff;
+	background-image: url(/bg_gray.png);
+	background-repeat: repeat-y;
+}

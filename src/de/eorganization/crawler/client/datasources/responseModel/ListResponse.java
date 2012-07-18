@@ -64,4 +64,15 @@ public class ListResponse<T> implements Serializable {
 		this.list = list;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "ListResponse [totalRecords=" + totalRecords + ", list=" + list
+				+ "]";
+	}
+	
+	
+
 }
