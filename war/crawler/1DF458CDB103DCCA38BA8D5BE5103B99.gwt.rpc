@@ -1,10 +1,10 @@
 com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException, true, true, true, true, com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException/3936916533, 3936916533
 com.google.gwt.user.client.rpc.RpcTokenException, true, true, false, false, com.google.gwt.user.client.rpc.RpcTokenException/2345075298, 2345075298
 com.google.gwt.user.client.rpc.XsrfToken, false, false, true, true, com.google.gwt.user.client.rpc.XsrfToken/4254043109, 4254043109
-de.eorganization.crawler.client.LoginService, false, false, false, false, _, 1873395342
 de.eorganization.crawler.client.model.LoginInfo, true, true, false, false, de.eorganization.crawler.client.model.LoginInfo/2330426707, 2330426707
-de.eorganization.crawler.client.model.Member, true, true, false, false, de.eorganization.crawler.client.model.Member/1594986321, 1594986321
+de.eorganization.crawler.client.model.Member, true, true, false, false, de.eorganization.crawler.client.model.Member/1188200870, 1188200870
 de.eorganization.crawler.client.model.UserRole, true, true, false, false, de.eorganization.crawler.client.model.UserRole/3157516295, 3157516295
+de.eorganization.crawler.client.services.LoginService, false, false, false, false, _, 2245483942
 java.lang.Exception, true, false, true, false, java.lang.Exception/1920171873, 1920171873
 java.lang.RuntimeException, true, false, true, false, java.lang.RuntimeException/515124647, 515124647
 java.lang.String, true, true, true, true, java.lang.String/2004016611, 2004016611

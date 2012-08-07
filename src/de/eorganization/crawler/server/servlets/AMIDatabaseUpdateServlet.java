@@ -51,7 +51,7 @@ public class AMIDatabaseUpdateServlet extends HttpServlet {
 		resp.setContentType("text/html");
 
 		AWSCredentials credentials = new PropertiesCredentials(this.getClass()
-				.getResourceAsStream("AwsCredentials.properties"));
+				.getResourceAsStream("../AwsCredentials.properties"));
 
 		AmazonEC2Client ec2 = new AmazonEC2Client(credentials);
 		int addedImages = 0;

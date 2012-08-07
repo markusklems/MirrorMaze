@@ -12,11 +12,11 @@ import com.smartgwt.client.data.DSRequest;
 import com.smartgwt.client.data.DSResponse;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
 
-import de.eorganization.crawler.client.CrawlerService;
-import de.eorganization.crawler.client.CrawlerServiceAsync;
 import de.eorganization.crawler.client.Crawler.Repository;
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
 import de.eorganization.crawler.client.model.Ami;
+import de.eorganization.crawler.client.services.CrawlerService;
+import de.eorganization.crawler.client.services.CrawlerServiceAsync;
 
 
 public class AmisDataSource extends GwtRpcDataSource {
@@ -76,7 +76,7 @@ public class AmisDataSource extends GwtRpcDataSource {
 		Map<String, Object> criteria = new HashMap<String, Object>();
 		for (String attribute : request.getCriteria().getAttributes())
 			criteria.put(attribute,
-					request.getCriteria().getAttributeAsObject(attribute));
+					request.getCriteria().getValues().get(attribute));
 
 		mirrorMazeService.getAmis(criteria, start, end,
 				new AsyncCallback<ListResponse<Ami>>() {
@@ -85,7 +85,7 @@ public class AmisDataSource extends GwtRpcDataSource {
 					public void onSuccess(ListResponse<Ami> result) {
 						log.info("got result for ami data source " + result);
 						response.setData(createListGridRecords(result.getList()));
-						response.setTotalRows(result.getTotalRecords());
+						response.setTotalRows(new Long(result.getTotalRecords()).intValue());
 						processResponse(requestId, response);
 					}
 

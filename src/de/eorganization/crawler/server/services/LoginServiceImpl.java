@@ -7,8 +7,8 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-import de.eorganization.crawler.client.LoginService;
 import de.eorganization.crawler.client.model.LoginInfo;
+import de.eorganization.crawler.client.services.LoginService;
 import de.eorganization.crawler.server.AmiManager;
 
 

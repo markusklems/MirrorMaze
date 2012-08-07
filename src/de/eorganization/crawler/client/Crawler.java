@@ -8,10 +8,8 @@ import java.util.Set;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.visualization.client.AbstractDataTable;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
@@ -26,9 +24,14 @@ import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.RecordComponentPoolingMode;
 import com.smartgwt.client.types.SummaryFunctionType;
 import com.smartgwt.client.types.VerticalAlignment;
+import com.smartgwt.client.util.BooleanCallback;
+import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
+import com.smartgwt.client.widgets.IButton;
 import com.smartgwt.client.widgets.Img;
 import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.widgets.events.ClickEvent;
+import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
 import com.smartgwt.client.widgets.form.fields.ComboBoxItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
@@ -48,8 +51,14 @@ import com.smartgwt.client.widgets.tab.events.TabSelectedEvent;
 import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
 
 import de.eorganization.crawler.client.datasources.AmisDataSource;
+import de.eorganization.crawler.client.gui.canvas.ProfileWindow;
 import de.eorganization.crawler.client.model.LoginInfo;
 import de.eorganization.crawler.client.model.Member;
+import de.eorganization.crawler.client.model.UserRole;
+import de.eorganization.crawler.client.services.CrawlerService;
+import de.eorganization.crawler.client.services.CrawlerServiceAsync;
+import de.eorganization.crawler.client.services.LoginService;
+import de.eorganization.crawler.client.services.LoginServiceAsync;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -105,8 +114,11 @@ public class Crawler implements EntryPoint {
 
 	private Member member;
 
-	private Label welcomeLabel = new Label("Checking status of ");
-	private Anchor loginAnchor = new Anchor(" login");
+	private Label welcomeLabel = new Label(
+			"<span style=\"font-size: 20pt\">Checking status of login...</span>");
+	private Anchor loginAnchor = new Anchor(
+			"<span style=\"font-size: 20pt\">Login</span>", true);
+	private HLayout adminLayout = new HLayout();
 
 	private PieChart pieAMIOwners;
 	private boolean pieAMIOwnersReady = false;
@@ -132,7 +144,8 @@ public class Crawler implements EntryPoint {
 					public void onFailure(Throwable error) {
 						welcomeLabel.setContents("");
 						loginAnchor.setHref("/_ah/login");
-						loginAnchor.setText("Hey fellow, login!");
+						loginAnchor
+								.setHTML("<span style=\"font-size: 20pt\">Login</span>");
 					}
 
 					public void onSuccess(LoginInfo result) {
@@ -142,14 +155,22 @@ public class Crawler implements EntryPoint {
 									member.getEmail());
 						loginAnchor.setEnabled(true);
 						if (result.isLoggedIn() && member != null) {
-							welcomeLabel.setContents("Welcome, "
-									+ member.getNickname() + "! ");
+							welcomeLabel
+									.setContents("<span style=\"font-size: 20pt\">"
+											+ member.getNickname() + "</span>");
 							loginAnchor.setHref(result.getLogoutUrl());
-							loginAnchor.setText(" (logout)");
+							loginAnchor
+									.setHTML("<span style=\"font-size: 20pt\">Logout</span>");
+							if (UserRole.ADMIN.equals(member.getRole()))
+								adminLayout.setVisible(true);
 						} else {
-							welcomeLabel.setContents("");
+							welcomeLabel
+									.setContents("<span style=\"font-size: 20pt\">Not logged in</span>");
+
 							loginAnchor.setHref(result.getLoginUrl());
-							loginAnchor.setText("Hey fellow, login!");
+							loginAnchor
+									.setHTML("<span style=\"font-size: 20pt\">Login</span>");
+
 						}
 
 					}
@@ -165,23 +186,45 @@ public class Crawler implements EntryPoint {
 
 		Img crawlerLogo = new Img("/crawler_logo.png", 397, 150);
 		crawlerLogo.setLayoutAlign(VerticalAlignment.TOP);
-		
+
 		HLayout login = new HLayout();
+		login.setMembersMargin(15);
 		login.setAlign(Alignment.RIGHT);
+
 		welcomeLabel.setAutoWidth();
 		welcomeLabel.setWrap(false);
 		login.addMember(welcomeLabel);
+
+		Anchor profileAnchor = new Anchor(
+				"<span style=\"font-size: 20pt\">Profile</span>", true);
+		profileAnchor.setWidth("10px");
+		profileAnchor.setWordWrap(false);
+		profileAnchor
+				.addClickHandler(new com.google.gwt.event.dom.client.ClickHandler() {
+
+					@Override
+					public void onClick(
+							com.google.gwt.event.dom.client.ClickEvent event) {
+						new ProfileWindow(member).show();
+					}
+				});
+		login.addMember(profileAnchor);
+
 		loginAnchor.setWordWrap(false);
 		login.addMember(loginAnchor);
-		
+
 		top.addMember(crawlerLogo);
 		top.addMember(login);
-		
+
 		masterLayout.addMember(top);
 
 		HLayout searchLayout = new HLayout();
+		searchLayout.setWidth100();
+		searchLayout.setBackgroundColor("#ffffff");
 		DynamicForm searchForm = new DynamicForm();
+		searchForm.setWidth(400);
 		final TextItem searchQuery = new TextItem("Search");
+		searchQuery.setWrapTitle(false);
 		searchQuery.addKeyPressHandler(new KeyPressHandler() {
 
 			@Override
@@ -194,20 +237,12 @@ public class Crawler implements EntryPoint {
 
 			}
 		});
-		searchForm.setFields(searchQuery);
-		searchLayout.addMember(searchForm);
-		masterLayout.addMember(searchLayout);
 
-		tabs.setWidth100();
-		tabs.setHeight100();
-		tabs.setBackgroundColor("white");
-
-		VLayout amiLayout = new VLayout();
-
-		DynamicForm amiFilter = new DynamicForm();
 		final ComboBoxItem regionFilter = new ComboBoxItem();
+		regionFilter.setWrapTitle(false);
 		regionFilter.setTitle("Select AWS Region");
-		regionFilter.setHint("Select of which AWS Region all AMIs are shown");
+		regionFilter
+				.setTooltip("Select of which AWS Region all AMIs are shown");
 		LinkedHashMap<String, String> regions = new LinkedHashMap<String, String>();
 		regions.put("all", "all");
 		for (Repository repo : Repository.values())
@@ -245,8 +280,27 @@ public class Crawler implements EntryPoint {
 				}
 			}
 		});
-		amiFilter.setFields(regionFilter);
-		amiLayout.addMember(amiFilter);
+		searchForm.setFields(searchQuery, regionFilter);
+		IButton searchButton = new IButton("Search", new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				amis.getCriteria().setAttribute("query",
+						searchQuery.getValueAsString());
+				refresh();
+			}
+		});
+
+		searchLayout.addMember(searchForm);
+		searchLayout.addMember(searchButton);
+
+		masterLayout.addMember(searchLayout);
+
+		tabs.setWidth100();
+		tabs.setHeight100();
+		tabs.setBackgroundColor("white");
+
+		VLayout amiLayout = new VLayout();
 
 		amis.setWidth100();
 		amis.setHeight100();
@@ -401,6 +455,43 @@ public class Crawler implements EntryPoint {
 
 		masterLayout.addMember(tabs);
 
+		adminLayout.setVisible(false);
+		IButton resetAmiCountersButton = new IButton("Reset Ami Counters",
+				new ClickHandler() {
+
+					@Override
+					public void onClick(ClickEvent event) {
+						SC.confirm(
+								"Are you sure? Resetting AMI counters is database operation intensive and might affect billing!",
+								new BooleanCallback() {
+
+									@Override
+									public void execute(Boolean value) {
+										if (value)
+											crawlerService
+													.resetAmiCounters(new AsyncCallback<Void>() {
+
+														@Override
+														public void onFailure(
+																Throwable caught) {
+															SC.warn("Could not reset Ami counters!");
+														}
+
+														@Override
+														public void onSuccess(
+																Void result) {
+															SC.say("Reset Ami counters.");
+														}
+													});
+									}
+								});
+
+					}
+				});
+		adminLayout.addMember(resetAmiCountersButton);
+
+		masterLayout.addMember(adminLayout);
+
 		masterLayout.setWidth100();
 		masterLayout.setHeight100();
 		masterLayout.draw();
@@ -417,9 +508,9 @@ public class Crawler implements EntryPoint {
 		Map<String, Object> criteria = new HashMap<String, Object>();
 		for (String attribute : amis.getCriteria().getAttributes())
 			criteria.put(attribute,
-					amis.getCriteria().getAttributeAsObject(attribute));
+					amis.getCriteria().getValues().get(attribute));
 
-		crawlerService.getNumberAllAmis(criteria, new AsyncCallback<Integer>() {
+		crawlerService.getNumberAllAmis(criteria, new AsyncCallback<Long>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -427,7 +518,7 @@ public class Crawler implements EntryPoint {
 			}
 
 			@Override
-			public void onSuccess(Integer result) {
+			public void onSuccess(Long result) {
 				if (result != null)
 					amiNumber.setContents(" " + result.toString());
 			}
@@ -490,6 +581,13 @@ public class Crawler implements EntryPoint {
 		options.setHeight(240);
 		options.setTitle("Software Packages");
 		return options;
+	}
+
+	/**
+	 * @return the member
+	 */
+	public Member getMember() {
+		return member;
 	}
 
 }

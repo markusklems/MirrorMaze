@@ -16,7 +16,6 @@ import de.eorganization.crawler.client.model.Language;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.model.Software;
 
-
 /**
  * @author mugglmenzel
  * 
@@ -62,6 +61,7 @@ public class MazeDAO extends DAOBase {
 			Ami ami = new Ami(null, repository, imageId, imageLocation,
 					imageOwnerAlias, ownerId, name, description, architecture,
 					platform, imageType);
+			getAmiCounter(repository).increment();
 			ofy().put(ami);
 			return true;
 		} else
@@ -80,6 +80,7 @@ public class MazeDAO extends DAOBase {
 			Ami ami = new Ami(id, repository, imageId, imageLocation,
 					imageOwnerAlias, ownerId, name, description, architecture,
 					platform, imageType);
+			getAmiCounter(repository).increment();
 			ofy().put(ami);
 			return ami;
 		} else
@@ -158,5 +159,48 @@ public class MazeDAO extends DAOBase {
 
 	public void updateLanguage(Language language) {
 		ofy().put(language);
+	}
+
+	public ShardedCounter getAmiCounter(String region) {
+		return isAmiAllOrRegion(region) ? new ShardedCounter("Ami")
+				: new ShardedCounter("Ami_" + region);
+	}
+
+	/**
+	 * Counter-based AMI Count that saves Database Operations
+	 * 
+	 * @param region
+	 * @return Number of AMIs from Counter
+	 */
+	public long getNumberAmis(String region) {
+		return getAmiCounter(region).getCount();
+	}
+
+	/**
+	 * Native AMI Count retrieved from expensive Database Query
+	 * 
+	 * @param region
+	 * @return Number of AMIs from Database Query
+	 */
+	public long getAmiCount(String region) {
+		return isAmiAllOrRegion(region) ? ofy().query(Ami.class).count()
+				: ofy().query(Ami.class).filter("repository", region).count();
+	}
+
+	/**
+	 * Is given region parameter describing a region or all regions
+	 * 
+	 * @param region
+	 * @return true - if region describes all regions, false - if regions is a
+	 *         certain region
+	 */
+
+	private boolean isAmiAllOrRegion(String region) {
+		return "all".equals(region) || "".equals(region) || region == null;
+	}
+
+	public Member updateMember(Member member) {
+		Key<Member> mbrKey = ofy().put(member);
+		return ofy().get(mbrKey);
 	}
 }

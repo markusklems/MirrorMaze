@@ -1,4 +1,4 @@
-package de.eorganization.crawler.client;
+package de.eorganization.crawler.client.services;
 
 import java.util.Map;
 
@@ -7,6 +7,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
 import de.eorganization.crawler.client.model.Ami;
+import de.eorganization.crawler.client.model.Member;
 
 
 @RemoteServiceRelativePath("crawler")
@@ -25,8 +26,12 @@ public interface CrawlerService extends RemoteService {
 
 	public Map<String, Long> getAmiOwnersPieData(String region);
 
-	public int getNumberAmis(Map<String,Object> criteria);
+	public long getNumberAmis(Map<String,Object> criteria);
 
-	public int getNumberAllAmis(Map<String, Object> criteria);
+	public long getNumberAllAmis(Map<String, Object> criteria);
+
+	public Member updateMember(Member member);
+	
+	public void resetAmiCounters();
 
 }

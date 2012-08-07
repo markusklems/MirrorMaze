@@ -11,7 +11,7 @@ public class ListResponse<T> implements Serializable {
 	 */
 	private static final long serialVersionUID = 3074664186533412530L;
 
-	int totalRecords;
+	long totalRecords;
 
 	List<T> list;
 
@@ -28,7 +28,7 @@ public class ListResponse<T> implements Serializable {
 	 * @param totalRecords
 	 * @param list
 	 */
-	public ListResponse(int totalRecords, List<T> list) {
+	public ListResponse(long totalRecords, List<T> list) {
 		super();
 		this.totalRecords = totalRecords;
 		this.list = list;
@@ -37,7 +37,7 @@ public class ListResponse<T> implements Serializable {
 	/**
 	 * @return the totalRecords
 	 */
-	public int getTotalRecords() {
+	public long getTotalRecords() {
 		return totalRecords;
 	}
 
@@ -52,7 +52,7 @@ public class ListResponse<T> implements Serializable {
 	 * @param totalRecords
 	 *            the totalRecords to set
 	 */
-	public void setTotalRecords(int totalRecords) {
+	public void setTotalRecords(long totalRecords) {
 		this.totalRecords = totalRecords;
 	}
 

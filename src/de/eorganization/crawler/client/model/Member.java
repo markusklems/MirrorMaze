@@ -22,10 +22,16 @@ public class Member implements Serializable {
 	private String email;
 
 	private String nickname;
-	
+
 	private UserRole role;
 
+	private String firstname;
 	
+	private String lastname;
+		
+	private String AWSSecretKey;
+
+	private String AWSAccessKey;
 
 	/**
 	 * 
@@ -33,7 +39,6 @@ public class Member implements Serializable {
 	public Member() {
 		super();
 	}
-
 
 	/**
 	 * 
@@ -44,7 +49,6 @@ public class Member implements Serializable {
 		this.role = role;
 	}
 
-	
 	/**
 	 * @param email
 	 * @param nickname
@@ -57,9 +61,6 @@ public class Member implements Serializable {
 		this.role = role;
 	}
 
-
-
-
 	/**
 	 * @return the email
 	 */
@@ -67,14 +68,13 @@ public class Member implements Serializable {
 		return email;
 	}
 
-
 	/**
-	 * @param email the email to set
+	 * @param email
+	 *            the email to set
 	 */
 	public void setEmail(String email) {
 		this.email = email;
 	}
-
 
 	/**
 	 * @return the role
@@ -91,7 +91,6 @@ public class Member implements Serializable {
 		this.role = role;
 	}
 
-
 	/**
 	 * @return the nickname
 	 */
@@ -99,13 +98,68 @@ public class Member implements Serializable {
 		return nickname;
 	}
 
-
 	/**
-	 * @param nickname the nickname to set
+	 * @param nickname
+	 *            the nickname to set
 	 */
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
 	}
 
-	
+	/**
+	 * @return the firstname
+	 */
+	public String getFirstname() {
+		return firstname;
+	}
+
+	/**
+	 * @return the lastname
+	 */
+	public String getLastname() {
+		return lastname;
+	}
+
+	/**
+	 * @param firstname the firstname to set
+	 */
+	public void setFirstname(String firstname) {
+		this.firstname = firstname;
+	}
+
+	/**
+	 * @param lastname the lastname to set
+	 */
+	public void setLastname(String lastname) {
+		this.lastname = lastname;
+	}
+
+	/**
+	 * @return the aWSSecretKey
+	 */
+	public String getAWSSecretKey() {
+		return AWSSecretKey;
+	}
+
+	/**
+	 * @return the aWSAccessKey
+	 */
+	public String getAWSAccessKey() {
+		return AWSAccessKey;
+	}
+
+	/**
+	 * @param aWSSecretKey the aWSSecretKey to set
+	 */
+	public void setAWSSecretKey(String aWSSecretKey) {
+		AWSSecretKey = aWSSecretKey;
+	}
+
+	/**
+	 * @param aWSAccessKey the aWSAccessKey to set
+	 */
+	public void setAWSAccessKey(String aWSAccessKey) {
+		AWSAccessKey = aWSAccessKey;
+	}
+
 }

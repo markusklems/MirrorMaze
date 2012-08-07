@@ -1,5 +1,7 @@
 package de.eorganization.crawler.server;
 
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.google.appengine.api.backends.BackendServiceFactory;
 import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.search.Index;
@@ -26,11 +29,12 @@ import com.google.appengine.api.search.Results;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.users.User;
 import com.google.gson.Gson;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
-import com.smartgwt.client.data.Criteria;
 
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
 import de.eorganization.crawler.client.model.Ami;
@@ -39,7 +43,7 @@ import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.model.Software;
 import de.eorganization.crawler.client.model.UserRole;
 import de.eorganization.crawler.server.db.dao.MazeDAO;
-
+import de.eorganization.crawler.server.db.dao.ShardedCounter;
 
 public class AmiManager {
 
@@ -187,8 +191,8 @@ public class AmiManager {
 			boolean regionAll = "all".equals(region) || "".equals(region)
 					|| region == null;
 
-			int total = getNumberAmis(memberId, region, null);
-			endRow = endRow > total ? total : endRow;
+			long total = getNumberAmis(memberId, region, null);
+			endRow = endRow > total ? new Long(total).intValue() : endRow;
 			int size = endRow - startRow > -1 ? endRow - startRow : 0;
 			if (size > 0)
 				keys = regionAll ? dao.ofy().query(Ami.class).offset(startRow)
@@ -318,14 +322,15 @@ public class AmiManager {
 
 	}
 
-	public static int getNumberAmis(Map<String, Object> criteria) {
+	public static long getNumberAmis(Map<String, Object> criteria) {
 		String region = (String) criteria.get("region");
 		String memberId = (String) criteria.get("memberId");
 		String query = (String) criteria.get("query");
 		return getNumberAmis(memberId, region, query);
 	}
 
-	public static int getNumberAmis(String memberId, String region, String query) {
+	public static long getNumberAmis(String memberId, String region,
+			String query) {
 
 		if (getMember(memberId) == null
 				|| getMember(memberId).getRole() == UserRole.USER)
@@ -334,10 +339,7 @@ public class AmiManager {
 		try {
 
 			if (query == null)
-				return "all".equals(region) || "".equals(region)
-						|| region == null ? dao.ofy().query(Ami.class).count()
-						: dao.ofy().query(Ami.class)
-								.filter("repository", region).count();
+				return dao.getNumberAmis(region);
 
 			SearchService ss = SearchServiceFactory.getSearchService();
 			Index idx = ss.getIndex(IndexSpec.newBuilder().setName("amiIndex")
@@ -354,6 +356,27 @@ public class AmiManager {
 			return 0;
 		}
 
+	}
+
+	public static Member updateMember(Member member) {
+		return dao.updateMember(member);
+	}
+
+	public static long getAmiCount(String region) {
+		return dao.getAmiCount(region);
+	}
+
+	public static ShardedCounter getAmiCounter(String region) {
+		return dao.getAmiCounter(region);
+	}
+
+	public static void resetAmiCounters() {
+
+		Queue queue = QueueFactory.getQueue("ami-crawler-queue");
+		queue.add(withUrl("/crawler/resetCounterAMI").header(
+				"Host",
+				BackendServiceFactory.getBackendService().getBackendAddress(
+						"ami-crawler")));
 	}
 
 }

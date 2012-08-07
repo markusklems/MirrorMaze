@@ -4,4 +4,8 @@
 		<property name="repository" direction="asc" />
 		<property name="imageId" direction="asc" />
 	</datastore-index>
+	<datastore-index kind="Ami" ancestor="false">
+		<property name="id" direction="asc" />
+		<property name="repository" direction="asc" />
+	</datastore-index>
 </datastore-indexes>

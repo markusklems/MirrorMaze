@@ -1,4 +1,4 @@
-package de.eorganization.crawler.client;
+package de.eorganization.crawler.client.services;
 
 import java.util.Map;
 
@@ -6,6 +6,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
 import de.eorganization.crawler.client.model.Ami;
+import de.eorganization.crawler.client.model.Member;
 
 
 public interface CrawlerServiceAsync {
@@ -27,9 +28,13 @@ public interface CrawlerServiceAsync {
 			AsyncCallback<Map<String, Long>> callback);
 
 	void getNumberAmis(Map<String, Object> criteria,
-			AsyncCallback<Integer> callback);
+			AsyncCallback<Long> callback);
 
 	void getNumberAllAmis(Map<String, Object> criteria,
-			AsyncCallback<Integer> callback);
+			AsyncCallback<Long> callback);
+
+	void updateMember(Member member, AsyncCallback<Member> callback);
+
+	void resetAmiCounters(AsyncCallback<Void> callback);
 
 }

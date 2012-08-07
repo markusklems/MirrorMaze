@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queue-entries>
+	<!--Change the refresh rate of the default queue to 1/s -->
+	<queue>
+		<name>ami-crawler-queue</name>
+		<rate>1/s</rate>
+	</queue>
+</queue-entries>

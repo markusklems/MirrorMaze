@@ -4,10 +4,11 @@ import java.util.Map;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-import de.eorganization.crawler.client.CrawlerService;
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
 import de.eorganization.crawler.client.model.Ami;
+import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.model.UserRole;
+import de.eorganization.crawler.client.services.CrawlerService;
 import de.eorganization.crawler.server.AmiManager;
 
 
@@ -36,12 +37,12 @@ public class CrawlerServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public int getNumberAmis(Map<String, Object> criteria) {
+	public long getNumberAmis(Map<String, Object> criteria) {
 		return AmiManager.getNumberAmis(criteria);
 	}
 
 	@Override
-	public int getNumberAllAmis(Map<String, Object> criteria) {
+	public long getNumberAllAmis(Map<String, Object> criteria) {
 		criteria.put("memberId", UserRole.ADMIN.getDefaultMemberId());
 		return AmiManager.getNumberAmis(criteria);
 	}
@@ -54,6 +55,15 @@ public class CrawlerServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public Map<String, Long> getSoftwarePackagesPieData(String region) {
 		return AmiManager.getSoftwarePackagesPieData(region);
+	}
+	
+	@Override
+	public Member updateMember(Member member) {
+		return AmiManager.updateMember(member);
+	}
+	
+	public void resetAmiCounters() {
+		AmiManager.resetAmiCounters();
 	}
 
 }
