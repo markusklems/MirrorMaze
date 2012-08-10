@@ -19,7 +19,7 @@ com.googlecode.objectify.Key, true, true, false, false, com.googlecode.objectify
 de.eorganization.crawler.client.datasources.responseModel.ListResponse, true, true, false, false, de.eorganization.crawler.client.datasources.responseModel.ListResponse/3549015281, 3549015281
 de.eorganization.crawler.client.model.Ami, true, true, false, false, de.eorganization.crawler.client.model.Ami/1993580612, 1993580612
 [Lde.eorganization.crawler.client.model.Ami;, true, true, false, false, [Lde.eorganization.crawler.client.model.Ami;/2576944022, 2576944022
-de.eorganization.crawler.client.model.Member, true, true, true, true, de.eorganization.crawler.client.model.Member/1188200870, 1188200870
+de.eorganization.crawler.client.model.Member, true, true, true, true, de.eorganization.crawler.client.model.Member/2778724778, 2778724778
 de.eorganization.crawler.client.model.Software, true, true, false, false, de.eorganization.crawler.client.model.Software/888463215, 888463215
 [Lde.eorganization.crawler.client.model.Software;, true, true, false, false, [Lde.eorganization.crawler.client.model.Software;/1111386521, 1111386521
 de.eorganization.crawler.client.model.UserRole, true, true, true, true, de.eorganization.crawler.client.model.UserRole/3157516295, 3157516295

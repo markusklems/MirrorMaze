@@ -147,12 +147,13 @@ public class AmiManager {
 		return getAmis(memberId, region, 0, -1);
 	}
 
-	public static ListResponse<Ami> getAmis(String memberId, Map<String, Object> criteria) {
+	public static ListResponse<Ami> getAmis(String memberId,
+			Map<String, Object> criteria) {
 		return getAmis(memberId, criteria, 0, -1);
 	}
 
-	public static ListResponse<Ami> getAmis(String memberId, Map<String, Object> criteria,
-			int startRow, int endRow) {
+	public static ListResponse<Ami> getAmis(String memberId,
+			Map<String, Object> criteria, int startRow, int endRow) {
 		log.info("getting amis for criteria " + criteria);
 		String region = (String) criteria.get("region");
 		String query = (String) criteria.get("query");
@@ -294,7 +295,13 @@ public class AmiManager {
 	public static Member getMember(String memberId) {
 		if (memberId == UserRole.ADMIN.getDefaultMemberId())
 			return new Member("", UserRole.ADMIN);
-		return memberId != null ? dao.ofy().get(Member.class, memberId) : null;
+		try {
+			return memberId != null ? dao.ofy().get(Member.class, memberId)
+					: null;
+		} catch (NotFoundException e) {
+			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			return null;
+		}
 	}
 
 	public static Member saveOrGetMember(User user) {
@@ -316,7 +323,8 @@ public class AmiManager {
 
 	}
 
-	public static long getNumberAmis(String memberId, Map<String, Object> criteria) {
+	public static long getNumberAmis(String memberId,
+			Map<String, Object> criteria) {
 		String region = (String) criteria.get("region");
 		String query = (String) criteria.get("query");
 		return getNumberAmis(memberId, region, query);
@@ -404,6 +412,18 @@ public class AmiManager {
 			return 10;
 
 		return dao.getNumberAmiSoftware(amiId);
+	}
+
+	public static Member findMemberByFilter(Map<String, Object> filter) {
+		return dao.findMemberByFilter(filter);
+	}
+
+	public static Member findMemberBySocialId(String socialId) {
+		return dao.findMemberBySocialId(socialId);
+	}
+
+	public static Member registerMember(Member member) {
+		return dao.registerMember(member);
 	}
 
 }

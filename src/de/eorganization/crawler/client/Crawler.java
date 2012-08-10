@@ -30,6 +30,7 @@ import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.IButton;
+import com.smartgwt.client.widgets.Img;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
@@ -58,6 +59,7 @@ import de.eorganization.crawler.client.gui.MemberUpdatedHandler;
 import de.eorganization.crawler.client.gui.canvas.AmiSoftwareDetailsWindow;
 import de.eorganization.crawler.client.gui.canvas.LoginWindow;
 import de.eorganization.crawler.client.gui.canvas.ProfileWindow;
+import de.eorganization.crawler.client.gui.canvas.RegisterWindow;
 import de.eorganization.crawler.client.model.LoginInfo;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.model.UserRole;
@@ -155,29 +157,42 @@ public class Crawler implements EntryPoint {
 								.getElement(), "display", "none");
 						loginInfo = result;
 
-						createMasterLayout(loginInfo.isLoggedIn());
+						if (getMember() != null
+								&& getMember().getEmail() == null)
+							new RegisterWindow(getMember(),
+									new MemberUpdatedHandler() {
+
+										@Override
+										public void updated(Member member) {
+											loginInfo.setMember(member);
+										}
+									}).show();
+						else
+							createMasterLayout();
+
 					}
 				});
 	}
 
-	private void createMasterLayout(final boolean loggedIn) {
+	private void createMasterLayout() {
 		final Layout masterLayout = new VLayout();
 
-		masterLayout.addMember(createTopLayout(loggedIn));
+		masterLayout.addMember(createTopLayout());
 		masterLayout.addMember(createSearchLayout());
-		masterLayout.addMember(createTabLayout(loggedIn));
+		masterLayout.addMember(createTabLayout());
 
 		if (getMember() != null && UserRole.ADMIN.equals(getMember().getRole()))
 			masterLayout.addMember(createAdminlayout());
 
 		masterLayout.setWidth100();
 		masterLayout.setHeight100();
+		masterLayout.setMaxHeight(700);
 		masterLayout.draw();
 
 		refresh();
 	}
 
-	private Layout createTopLayout(final boolean loggedIn) {
+	private Layout createTopLayout() {
 		final Layout top = new HLayout();
 		top.setWidth100();
 		top.setBackgroundImage("/images/clouds.png");
@@ -194,6 +209,10 @@ public class Crawler implements EntryPoint {
 		login.setMembersMargin(15);
 		login.setAlign(Alignment.RIGHT);
 
+		Img profileImg = new Img();
+		profileImg.setHeight(20);
+		// profileImg.setMaxWidth(50);
+
 		welcomeLabel.setAutoWidth();
 		welcomeLabel.setWrap(false);
 
@@ -205,7 +224,8 @@ public class Crawler implements EntryPoint {
 
 		loginAnchor.setWordWrap(false);
 
-		if (loggedIn && getMember() != null) {
+		if (loginInfo.isLoggedIn() && getMember() != null) {
+			profileImg.setSrc(getMember().getProfilePic());
 			welcomeLabel.setContents("");
 			profileAnchor.setHTML("<span style=\"font-size: 20pt\">"
 					+ getMember().getNickname() + "</span>");
@@ -248,6 +268,7 @@ public class Crawler implements EntryPoint {
 			loginAnchor.setHTML("<span style=\"font-size: 20pt\">Login</span>");
 
 		}
+		login.addMember(profileImg);
 		login.addMember(welcomeLabel);
 		login.addMember(profileAnchor);
 		login.addMember(loginDivider);
@@ -342,20 +363,20 @@ public class Crawler implements EntryPoint {
 		return searchLayout;
 	}
 
-	private TabSet createTabLayout(final boolean loggedIn) {
+	private TabSet createTabLayout() {
 		tabs.setWidth100();
 		tabs.setHeight100();
 		tabs.setBackgroundColor("white");
 
-		tabs.addTab(createAmisTab(loggedIn));
+		tabs.addTab(createAmisTab());
 		tabs.addTab(new Tab("Compare AMIs"));
 		tabs.addTab(new Tab("Scan AMI"));
-		tabs.addTab(createStatisticsTab(loggedIn));
-		
+		tabs.addTab(createStatisticsTab());
+
 		return tabs;
 	}
 
-	private Tab createAmisTab(final boolean loggedIn) {
+	private Tab createAmisTab() {
 		VLayout amiLayout = new VLayout();
 
 		amis.setWidth100();
@@ -400,7 +421,7 @@ public class Crawler implements EntryPoint {
 		// amis.setShowGroupSummary(true);
 
 		amis.setDataSource(new AmisDataSource(getMember() != null ? getMember()
-				.getEmail() : ""));
+				.getEmail() : null));
 		amis.setCriteria(new Criteria("region", Repository.EU_1.getName()));
 		amis.setAutoFetchData(true);
 		amis.setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
@@ -453,7 +474,7 @@ public class Crawler implements EntryPoint {
 		return amiTable;
 	}
 
-	private Tab createStatisticsTab(final boolean loggedIn) {
+	private Tab createStatisticsTab() {
 		final Tab statsTab = new Tab("Statistics");
 		final VLayout pieLayout = new VLayout();
 
@@ -492,7 +513,7 @@ public class Crawler implements EntryPoint {
 		statsTab.addTabSelectedHandler(new TabSelectedHandler() {
 			@Override
 			public void onTabSelected(TabSelectedEvent event) {
-				if (loggedIn) {
+				if (loginInfo.isLoggedIn()) {
 					crawlerService.getSoftwarePackagesPieData(amis
 							.getCriteria().getAttribute("region"),
 							new AsyncCallback<Map<String, Long>>() {

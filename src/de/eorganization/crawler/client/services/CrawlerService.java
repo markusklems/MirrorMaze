@@ -38,4 +38,6 @@ public interface CrawlerService extends RemoteService {
 	public ListResponse<Software> getAmiSoftware(String memberId, Long amiId,
 			Map<String, Object> criteria, int startRow, int endRow);
 
+	public Member registerMember(Member member);
+
 }

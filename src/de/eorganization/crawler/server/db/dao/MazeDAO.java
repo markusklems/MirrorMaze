@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyOpts;
 import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.Query;
 import com.googlecode.objectify.util.DAOBase;
 
 import de.eorganization.crawler.client.model.Ami;
@@ -222,5 +223,24 @@ public class MazeDAO extends DAOBase {
 		return ofy().query(Software.class)
 				.ancestor(ofy().get(Ami.class, amiId)).count();
 
+	}
+
+	public Member findMemberByFilter(Map<String, Object> filter) {
+		Query<Member> query = ofy().query(Member.class);
+		for (String key : filter.keySet()) {
+			query.filter(key, filter.get(key));
+		}
+		return query.get();
+	}
+
+	public Member findMemberBySocialId(String socialId) {
+		return ofy().query(Member.class).filter("socialId", socialId).get();
+	}
+
+	public Member registerMember(Member member) {
+		Key<Member> key = ofy().put(member);
+		if (key != null)
+			return ofy().get(key);
+		return null;
 	}
 }

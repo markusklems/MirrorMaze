@@ -28,7 +28,7 @@ import de.eorganization.crawler.client.services.CrawlerServiceAsync;
  * @author mugglmenzel
  * 
  */
-public class ProfileWindow extends Window {
+public class RegisterWindow extends Window {
 
 	private Member member;
 
@@ -51,7 +51,7 @@ public class ProfileWindow extends Window {
 	/**
 	 * 
 	 */
-	public ProfileWindow(Member member, MemberUpdatedHandler handler) {
+	public RegisterWindow(Member member, MemberUpdatedHandler handler) {
 		this.member = member;
 		this.updatedHandler = handler;
 		createWindowLayout();
@@ -60,7 +60,7 @@ public class ProfileWindow extends Window {
 	private void createWindowLayout() {
 		setWidth(500);
 		setHeight("70%");
-		setTitle("Profile");
+		setTitle("Register");
 		setShowMinimizeButton(false);
 		setIsModal(true);
 		setShowModalMask(true);
@@ -74,11 +74,11 @@ public class ProfileWindow extends Window {
 
 		Img profileImg = new Img();
 		profileImg.setSrc(member.getProfilePic());
-		profileImg.setMaxWidth(100);
 		profileImg.setHeight(100);
+		profileImg.setMaxWidth(100);
 
 		emailItem.setValue(member.getEmail());
-		emailItem.setDisabled(true);
+		emailItem.setRequired(true);
 		firstNameItem.setValue(member.getFirstname());
 		firstNameItem.setRequired(true);
 		lastNameItem.setValue(member.getLastname());
@@ -113,14 +113,17 @@ public class ProfileWindow extends Window {
 
 					CrawlerServiceAsync crawlerService = GWT
 							.create(CrawlerService.class);
-					crawlerService.updateMember(member,
+					crawlerService.registerMember(member,
 							new AsyncCallback<Member>() {
 
 								@Override
 								public void onSuccess(Member result) {
-									updatedHandler.updated(result);
-									destroy();
-									SC.say("Saved.");
+									if (member != null) {
+										updatedHandler.updated(result);
+										destroy();
+										SC.say("Saved.");
+									} else
+										SC.warn("Email address already in use!");
 								}
 
 								@Override
@@ -145,5 +148,4 @@ public class ProfileWindow extends Window {
 		addItem(windowLayout);
 
 	}
-
 }

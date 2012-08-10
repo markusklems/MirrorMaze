@@ -18,6 +18,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import de.eorganization.crawler.client.model.LoginInfo;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.services.LoginService;
+import de.eorganization.crawler.server.AmiManager;
 import de.eorganization.crawler.server.OAuth2Provider;
 import de.eorganization.crawler.server.servlets.util.CookiesUtil;
 
@@ -91,9 +92,15 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 					return loginInfo;
 
 				log.info("Retrieved access token " + accessTokenString);
+				Token accessToken = new Token(accessTokenString, accessSecret);
+				log.info("Token object " + accessToken.getToken() + ", "
+						+ accessToken.getSecret());
+
+				OAuth2Provider provider = OAuth2Provider.valueOf(oauthService);
+				OAuthService service = provider.getOAuthService();
 
 				Cookie serviceTokenCookie = new Cookie("oauth.service",
-						accessTokenString);
+						provider.toString());
 				serviceTokenCookie.setMaxAge(14 * 24 * 60 * 60);
 				serviceTokenCookie.setPath("/");
 				getThreadLocalResponse().addCookie(serviceTokenCookie);
@@ -108,13 +115,6 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 				accessSecretCookie.setPath("/");
 				getThreadLocalResponse().addCookie(accessSecretCookie);
 
-				OAuth2Provider provider = OAuth2Provider.valueOf(oauthService);
-
-				OAuthService service = provider.getOAuthService();
-				Token accessToken = new Token(accessTokenString, accessSecret);
-				log.info("Token object " + accessToken.getToken() + ", "
-						+ accessToken.getSecret());
-
 				if (OAuth2Provider.GOOGLE.equals(provider)) {
 					OAuthRequest req = new OAuthRequest(Verb.GET,
 							"https://www.googleapis.com/oauth2/v1/userinfo");
@@ -128,13 +128,22 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 					log.info("got user info: "
 							+ googleUserInfo.getString("given_name") + ", "
 							+ googleUserInfo.getString("family_name"));
-					Member tempMember = new Member();
-					tempMember.setEmail(googleUserInfo.getString("id"));
-					tempMember.setFirstname(googleUserInfo
-							.getString("given_name"));
-					tempMember.setLastname(googleUserInfo
-							.getString("family_name"));
-					tempMember.setNickname(googleUserInfo.getString("name"));
+
+					Member tempMember = AmiManager
+							.findMemberBySocialId(googleUserInfo
+									.getString("id"));
+					if (tempMember == null) {
+						tempMember = new Member();
+
+						tempMember.setSocialId(googleUserInfo.getString("id"));
+						tempMember.setFirstname(googleUserInfo
+								.getString("given_name"));
+						tempMember.setLastname(googleUserInfo
+								.getString("family_name"));
+						tempMember
+								.setNickname(googleUserInfo.getString("name"));
+						tempMember.setProfilePic(googleUserInfo.getString("picture"));
+					}
 					loginInfo.setMember(tempMember);
 					loginInfo.setLoggedIn(true);
 
@@ -151,14 +160,22 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 					log.info("got user info: "
 							+ twitterUserInfo.getString("name") + ", "
 							+ twitterUserInfo.getString("screen_name"));
-					Member tempMember = new Member();
-					tempMember.setEmail(twitterUserInfo.getString("id"));
-					tempMember.setFirstname(twitterUserInfo.getString("name")
-							.split(" ")[0]);
-					tempMember.setLastname(twitterUserInfo.getString("name")
-							.split(" ", 2)[1]);
-					tempMember.setNickname(twitterUserInfo
-							.getString("screen_name"));
+
+					Member tempMember = AmiManager
+							.findMemberBySocialId(new Integer(twitterUserInfo
+									.getInt("id")).toString());
+					if (tempMember == null) {
+						tempMember = new Member();
+						tempMember.setSocialId(new Integer(twitterUserInfo
+								.getInt("id")).toString());
+						tempMember.setFirstname(twitterUserInfo.getString(
+								"name").split(" ")[0]);
+						tempMember.setLastname(twitterUserInfo
+								.getString("name").split(" ", 2)[1]);
+						tempMember.setNickname(twitterUserInfo
+								.getString("screen_name"));
+						tempMember.setProfilePic(twitterUserInfo.getString("profile_image_url"));
+					}
 					loginInfo.setMember(tempMember);
 					loginInfo.setLoggedIn(true);
 				}

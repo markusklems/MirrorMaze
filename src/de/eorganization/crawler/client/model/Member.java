@@ -20,6 +20,10 @@ public class Member implements Serializable {
 
 	@Id
 	private String email;
+	
+	private String socialId;
+	
+	private String profilePic;
 
 	private String nickname;
 
@@ -160,6 +164,34 @@ public class Member implements Serializable {
 	 */
 	public void setAWSAccessKey(String aWSAccessKey) {
 		AWSAccessKey = aWSAccessKey;
+	}
+
+	/**
+	 * @return the socialId
+	 */
+	public String getSocialId() {
+		return socialId;
+	}
+
+	/**
+	 * @param socialId the socialId to set
+	 */
+	public void setSocialId(String socialId) {
+		this.socialId = socialId;
+	}
+
+	/**
+	 * @return the profilePic
+	 */
+	public String getProfilePic() {
+		return profilePic;
+	}
+
+	/**
+	 * @param profilePic the profilePic to set
+	 */
+	public void setProfilePic(String profilePic) {
+		this.profilePic = profilePic;
 	}
 
 }

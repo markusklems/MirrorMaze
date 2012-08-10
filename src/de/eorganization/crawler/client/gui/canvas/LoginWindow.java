@@ -38,7 +38,7 @@ public class LoginWindow extends Window {
 
 		VLayout windowLayout = new VLayout();
 		windowLayout.setMargin(10);
-		windowLayout.setMembersMargin(15);
+		windowLayout.setMembersMargin(10);
 
 		Label welcomeLabel = new Label(
 				"<span style=\"font-size: 20px\">Please Login to access the Crawler.</span>");

@@ -13,7 +13,7 @@
 <!--                                                               -->
 <!-- Consider inlining CSS to reduce the number of requested files -->
 <!--                                                               -->
-<link type="text/css" rel="stylesheet" href="crawler.css">
+<link type="text/css" rel="stylesheet" href="css/crawler.css">
 
 <!--                                           -->
 <!-- Any title is fine                         -->
@@ -57,40 +57,9 @@
 <!-- to create a completely dynamic UI.        -->
 <!--                                           -->
 <body>
-	<div id="loading" style="display: none">
-		<div id="progressbar"
-			style="margin: 15px; width: 300px; height: 10px; border: 2px solid black; overflow: hidden;">
-			<div id="progress"
-				style="background: silver; height: 100%; width: 0;"></div>
-			<script type="text/javascript">
-				var loading = document.getElementById('loading');
-				var progress = document.getElementById('progress');
-				var progressbar = document.getElementById('progressbar');
-
-				function updateProgress() {
-					if (loading.style.display !== 'none') {
-						var width = parseInt(progress.offsetWidth
-								+ ((progressbar.offsetWidth - progress.offsetWidth) * .15));
-
-						if (width > (progressbar.offsetWidth * .95)) {
-							width = parseInt(progressbar.offsetWidth) * .5;
-						}
-
-						progress.style.width = width + 'px';
-						window.setTimeout("updateProgress()", 1000);
-					}
-				}
-
-				document.body.style.margin = 0;
-				document.body.style.padding = 0;
-
-				loading.style.display = 'block';
-				updateProgress();
-			</script>
-
-		</div>
+	<div id="loading" style="display: block">
+		<span style="font-family: Helvetica; font-size: 20pt;">Loading...</span>
 	</div>
-
 	<!-- OPTIONAL: include this if you want history support -->
 	<iframe src="javascript:''" id="__gwt_historyFrame" tabIndex="-1"
 		style="position: absolute; width: 0; height: 0; border: 0"></iframe>

@@ -41,4 +41,6 @@ public interface CrawlerServiceAsync {
 			Map<String, Object> criteria, int startRow, int endRow,
 			AsyncCallback<ListResponse<Software>> callback);
 
+	void registerMember(Member member, AsyncCallback<Member> callback);
+
 }
