@@ -8,8 +8,11 @@ import java.util.Set;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.visualization.client.AbstractDataTable;
 import com.google.gwt.visualization.client.AbstractDataTable.ColumnType;
 import com.google.gwt.visualization.client.DataTable;
@@ -23,12 +26,10 @@ import com.smartgwt.client.types.BkgndRepeat;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.RecordComponentPoolingMode;
 import com.smartgwt.client.types.SummaryFunctionType;
-import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.util.BooleanCallback;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.IButton;
-import com.smartgwt.client.widgets.Img;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
@@ -42,6 +43,8 @@ import com.smartgwt.client.widgets.form.fields.events.KeyPressHandler;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.SummaryFunction;
+import com.smartgwt.client.widgets.grid.events.RecordDoubleClickEvent;
+import com.smartgwt.client.widgets.grid.events.RecordDoubleClickHandler;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.Layout;
 import com.smartgwt.client.widgets.layout.VLayout;
@@ -51,6 +54,9 @@ import com.smartgwt.client.widgets.tab.events.TabSelectedEvent;
 import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
 
 import de.eorganization.crawler.client.datasources.AmisDataSource;
+import de.eorganization.crawler.client.gui.MemberUpdatedHandler;
+import de.eorganization.crawler.client.gui.canvas.AmiSoftwareDetailsWindow;
+import de.eorganization.crawler.client.gui.canvas.LoginWindow;
 import de.eorganization.crawler.client.gui.canvas.ProfileWindow;
 import de.eorganization.crawler.client.model.LoginInfo;
 import de.eorganization.crawler.client.model.Member;
@@ -112,13 +118,14 @@ public class Crawler implements EntryPoint {
 	 * Data
 	 */
 
-	private Member member;
+	private LoginInfo loginInfo;
 
 	private Label welcomeLabel = new Label(
 			"<span style=\"font-size: 20pt\">Checking status of login...</span>");
+	Anchor profileAnchor = new Anchor(
+			"<span style=\"font-size: 20pt\"> </span>", true);
 	private Anchor loginAnchor = new Anchor(
 			"<span style=\"font-size: 20pt\">Login</span>", true);
-	private HLayout adminLayout = new HLayout();
 
 	private PieChart pieAMIOwners;
 	private boolean pieAMIOwnersReady = false;
@@ -138,54 +145,50 @@ public class Crawler implements EntryPoint {
 	 * This is the entry point method.
 	 */
 	public void onModuleLoad() {
-
 		loginService.login(GWT.getHostPageBaseURL(),
 				new AsyncCallback<LoginInfo>() {
 					public void onFailure(Throwable error) {
-						welcomeLabel.setContents("");
-						loginAnchor.setHref("/_ah/login");
-						loginAnchor
-								.setHTML("<span style=\"font-size: 20pt\">Login</span>");
 					}
 
 					public void onSuccess(LoginInfo result) {
-						member = result.getMember();
-						if (member != null)
-							amis.getCriteria().setAttribute("memberId",
-									member.getEmail());
-						loginAnchor.setEnabled(true);
-						if (result.isLoggedIn() && member != null) {
-							welcomeLabel
-									.setContents("<span style=\"font-size: 20pt\">"
-											+ member.getNickname() + "</span>");
-							loginAnchor.setHref(result.getLogoutUrl());
-							loginAnchor
-									.setHTML("<span style=\"font-size: 20pt\">Logout</span>");
-							if (UserRole.ADMIN.equals(member.getRole()))
-								adminLayout.setVisible(true);
-						} else {
-							welcomeLabel
-									.setContents("<span style=\"font-size: 20pt\">Not logged in</span>");
+						DOM.setStyleAttribute(RootPanel.get("loading")
+								.getElement(), "display", "none");
+						loginInfo = result;
 
-							loginAnchor.setHref(result.getLoginUrl());
-							loginAnchor
-									.setHTML("<span style=\"font-size: 20pt\">Login</span>");
-
-						}
-
+						createMasterLayout(loginInfo.isLoggedIn());
 					}
 				});
+	}
 
+	private void createMasterLayout(final boolean loggedIn) {
 		final Layout masterLayout = new VLayout();
+
+		masterLayout.addMember(createTopLayout(loggedIn));
+		masterLayout.addMember(createSearchLayout());
+		masterLayout.addMember(createTabLayout(loggedIn));
+
+		if (getMember() != null && UserRole.ADMIN.equals(getMember().getRole()))
+			masterLayout.addMember(createAdminlayout());
+
+		masterLayout.setWidth100();
+		masterLayout.setHeight100();
+		masterLayout.draw();
+
+		refresh();
+	}
+
+	private Layout createTopLayout(final boolean loggedIn) {
 		final Layout top = new HLayout();
 		top.setWidth100();
-		top.setBackgroundImage("/clouds.png");
+		top.setBackgroundImage("/images/clouds.png");
 		top.setBackgroundPosition("bottom");
 		top.setBackgroundRepeat(BkgndRepeat.REPEAT_X);
 		top.setAlign(Alignment.LEFT);
 
-		Img crawlerLogo = new Img("/crawler_logo.png", 397, 150);
-		crawlerLogo.setLayoutAlign(VerticalAlignment.TOP);
+		Anchor crawlerLogo = new Anchor(new SafeHtmlBuilder()
+				.appendHtmlConstant(
+						Canvas.imgHTML("/images/crawler_logo.png", 397, 150))
+				.toSafeHtml(), GWT.getHostPageBaseURL(), "_top");
 
 		HLayout login = new HLayout();
 		login.setMembersMargin(15);
@@ -193,31 +196,70 @@ public class Crawler implements EntryPoint {
 
 		welcomeLabel.setAutoWidth();
 		welcomeLabel.setWrap(false);
-		login.addMember(welcomeLabel);
 
-		Anchor profileAnchor = new Anchor(
-				"<span style=\"font-size: 20pt\">Profile</span>", true);
-		profileAnchor.setWidth("10px");
 		profileAnchor.setWordWrap(false);
-		profileAnchor
-				.addClickHandler(new com.google.gwt.event.dom.client.ClickHandler() {
 
-					@Override
-					public void onClick(
-							com.google.gwt.event.dom.client.ClickEvent event) {
-						new ProfileWindow(member).show();
-					}
-				});
-		login.addMember(profileAnchor);
+		Label loginDivider = new Label(
+				"<span style=\"font-size: 25px\">|</span>");
+		loginDivider.setAutoWidth();
 
 		loginAnchor.setWordWrap(false);
+
+		if (loggedIn && getMember() != null) {
+			welcomeLabel.setContents("");
+			profileAnchor.setHTML("<span style=\"font-size: 20pt\">"
+					+ getMember().getNickname() + "</span>");
+			profileAnchor
+					.addClickHandler(new com.google.gwt.event.dom.client.ClickHandler() {
+
+						@Override
+						public void onClick(
+								com.google.gwt.event.dom.client.ClickEvent event) {
+							new ProfileWindow(getMember(),
+									new MemberUpdatedHandler() {
+
+										@Override
+										public void updated(Member member) {
+											loginInfo.setMember(member);
+										}
+									}).show();
+						}
+					});
+
+			loginAnchor.setHref(loginInfo.getLogoutUrl());
+			loginAnchor
+					.setHTML("<span style=\"font-size: 20pt\">Logout</span>");
+		} else {
+
+			welcomeLabel
+					.setContents("<span style=\"font-size: 20pt\">Not logged in</span>");
+			profileAnchor.setEnabled(false);
+			profileAnchor.setVisible(false);
+
+			loginAnchor
+					.addClickHandler(new com.google.gwt.event.dom.client.ClickHandler() {
+
+						@Override
+						public void onClick(
+								com.google.gwt.event.dom.client.ClickEvent event) {
+							new LoginWindow(loginInfo.getLoginUrl()).show();
+						}
+					});
+			loginAnchor.setHTML("<span style=\"font-size: 20pt\">Login</span>");
+
+		}
+		login.addMember(welcomeLabel);
+		login.addMember(profileAnchor);
+		login.addMember(loginDivider);
 		login.addMember(loginAnchor);
 
 		top.addMember(crawlerLogo);
 		top.addMember(login);
 
-		masterLayout.addMember(top);
+		return top;
+	}
 
+	private Layout createSearchLayout() {
 		HLayout searchLayout = new HLayout();
 		searchLayout.setWidth100();
 		searchLayout.setBackgroundColor("#ffffff");
@@ -254,8 +296,11 @@ public class Crawler implements EntryPoint {
 			@Override
 			public void onChanged(ChangedEvent event) {
 				try {
-					amis.setCriteria(new Criteria("region", Repository.valueOf(
-							(String) regionFilter.getDisplayValue()).getName()));
+					amis.getCriteria().setAttribute(
+							"region",
+							Repository.valueOf(
+									(String) regionFilter.getDisplayValue())
+									.getName());
 					refresh();
 				} catch (Exception e) {
 				}
@@ -294,12 +339,23 @@ public class Crawler implements EntryPoint {
 		searchLayout.addMember(searchForm);
 		searchLayout.addMember(searchButton);
 
-		masterLayout.addMember(searchLayout);
+		return searchLayout;
+	}
 
+	private TabSet createTabLayout(final boolean loggedIn) {
 		tabs.setWidth100();
 		tabs.setHeight100();
 		tabs.setBackgroundColor("white");
 
+		tabs.addTab(createAmisTab(loggedIn));
+		tabs.addTab(new Tab("Compare AMIs"));
+		tabs.addTab(new Tab("Scan AMI"));
+		tabs.addTab(createStatisticsTab(loggedIn));
+		
+		return tabs;
+	}
+
+	private Tab createAmisTab(final boolean loggedIn) {
 		VLayout amiLayout = new VLayout();
 
 		amis.setWidth100();
@@ -342,11 +398,23 @@ public class Crawler implements EntryPoint {
 		amis.setCanResizeFields(true);
 		// amis.setShowGridSummary(true);
 		// amis.setShowGroupSummary(true);
-		amis.setDataSource(new AmisDataSource());
+
+		amis.setDataSource(new AmisDataSource(getMember() != null ? getMember()
+				.getEmail() : ""));
 		amis.setCriteria(new Criteria("region", Repository.EU_1.getName()));
 		amis.setAutoFetchData(true);
 		amis.setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
 		amis.setDataPageSize(20);
+		amis.addRecordDoubleClickHandler(new RecordDoubleClickHandler() {
+
+			@Override
+			public void onRecordDoubleClick(RecordDoubleClickEvent event) {
+				if (event.isLeftButtonDown()) {
+					new AmiSoftwareDetailsWindow(getMember(), event.getRecord()
+							.getAttributeAsLong("id")).show();
+				}
+			}
+		});
 		amiLayout.addMember(amis);
 
 		/*
@@ -381,44 +449,14 @@ public class Crawler implements EntryPoint {
 
 		Tab amiTable = new Tab("AMI List");
 		amiTable.setPane(amiLayout);
-		tabs.addTab(amiTable);
 
+		return amiTable;
+	}
+
+	private Tab createStatisticsTab(final boolean loggedIn) {
 		final Tab statsTab = new Tab("Statistics");
-		statsTab.addTabSelectedHandler(new TabSelectedHandler() {
-			@Override
-			public void onTabSelected(TabSelectedEvent event) {
-				crawlerService.getSoftwarePackagesPieData(amis.getCriteria()
-						.getAttribute("region"),
-						new AsyncCallback<Map<String, Long>>() {
-
-							@Override
-							public void onFailure(Throwable caught) {
-							}
-
-							@Override
-							public void onSuccess(Map<String, Long> result) {
-								softwarePackagesPieData = result;
-								refreshPie();
-							}
-						});
-				crawlerService.getAmiOwnersPieData(amis.getCriteria()
-						.getAttribute("region"),
-						new AsyncCallback<Map<String, Long>>() {
-
-							@Override
-							public void onFailure(Throwable caught) {
-							}
-
-							@Override
-							public void onSuccess(Map<String, Long> result) {
-								amiOwnersPieData = result;
-								refreshPie();
-							}
-						});
-			}
-		});
-		tabs.addTab(statsTab);
 		final VLayout pieLayout = new VLayout();
+
 		Runnable onLoadCallback = new Runnable() {
 			public void run() {
 
@@ -451,11 +489,49 @@ public class Crawler implements EntryPoint {
 		VisualizationUtils.loadVisualizationApi(onLoadCallback,
 				PieChart.PACKAGE);
 
-		tabs.addTab(new Tab("Scan AMI"));
+		statsTab.addTabSelectedHandler(new TabSelectedHandler() {
+			@Override
+			public void onTabSelected(TabSelectedEvent event) {
+				if (loggedIn) {
+					crawlerService.getSoftwarePackagesPieData(amis
+							.getCriteria().getAttribute("region"),
+							new AsyncCallback<Map<String, Long>>() {
 
-		masterLayout.addMember(tabs);
+								@Override
+								public void onFailure(Throwable caught) {
+								}
 
-		adminLayout.setVisible(false);
+								@Override
+								public void onSuccess(Map<String, Long> result) {
+									softwarePackagesPieData = result;
+									refreshPie();
+								}
+							});
+					crawlerService.getAmiOwnersPieData(amis.getCriteria()
+							.getAttribute("region"),
+							new AsyncCallback<Map<String, Long>>() {
+
+								@Override
+								public void onFailure(Throwable caught) {
+								}
+
+								@Override
+								public void onSuccess(Map<String, Long> result) {
+									amiOwnersPieData = result;
+									refreshPie();
+								}
+							});
+				}
+			}
+		});
+
+		return statsTab;
+	}
+
+	private Layout createAdminlayout() {
+		HLayout adminLayout = new HLayout();
+		adminLayout.setVisible(getMember() != null
+				&& UserRole.ADMIN.equals(getMember().getRole()));
 		IButton resetAmiCountersButton = new IButton("Reset Ami Counters",
 				new ClickHandler() {
 
@@ -490,13 +566,7 @@ public class Crawler implements EntryPoint {
 				});
 		adminLayout.addMember(resetAmiCountersButton);
 
-		masterLayout.addMember(adminLayout);
-
-		masterLayout.setWidth100();
-		masterLayout.setHeight100();
-		masterLayout.draw();
-
-		refresh();
+		return adminLayout;
 	}
 
 	private void refresh() {
@@ -583,11 +653,8 @@ public class Crawler implements EntryPoint {
 		return options;
 	}
 
-	/**
-	 * @return the member
-	 */
-	public Member getMember() {
-		return member;
+	private Member getMember() {
+		return loginInfo != null ? loginInfo.getMember() : null;
 	}
 
 }

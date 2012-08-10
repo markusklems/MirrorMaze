@@ -1,3 +1,4 @@
+com.google.appengine.api.datastore.Key, true, true, false, false, com.google.appengine.api.datastore.Key/1349195865, 1349195865
 com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException, true, true, true, true, com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException/3936916533, 3936916533
 com.google.gwt.user.client.rpc.RpcTokenException, true, true, false, false, com.google.gwt.user.client.rpc.RpcTokenException/2345075298, 2345075298
 com.google.gwt.user.client.rpc.XsrfToken, false, false, true, true, com.google.gwt.user.client.rpc.XsrfToken/4254043109, 4254043109
@@ -14,15 +15,18 @@ com.google.gwt.user.client.ui.ScrollListenerCollection, true, true, false, false
 com.google.gwt.user.client.ui.TabListenerCollection, true, true, false, false, com.google.gwt.user.client.ui.TabListenerCollection/3768293299, 3768293299
 com.google.gwt.user.client.ui.TableListenerCollection, true, true, false, false, com.google.gwt.user.client.ui.TableListenerCollection/2254740473, 2254740473
 com.google.gwt.user.client.ui.TreeListenerCollection, true, true, false, false, com.google.gwt.user.client.ui.TreeListenerCollection/3716243734, 3716243734
+com.googlecode.objectify.Key, true, true, false, false, com.googlecode.objectify.Key/1892801593, 1892801593
 de.eorganization.crawler.client.datasources.responseModel.ListResponse, true, true, false, false, de.eorganization.crawler.client.datasources.responseModel.ListResponse/3549015281, 3549015281
 de.eorganization.crawler.client.model.Ami, true, true, false, false, de.eorganization.crawler.client.model.Ami/1993580612, 1993580612
 [Lde.eorganization.crawler.client.model.Ami;, true, true, false, false, [Lde.eorganization.crawler.client.model.Ami;/2576944022, 2576944022
 de.eorganization.crawler.client.model.Member, true, true, true, true, de.eorganization.crawler.client.model.Member/1188200870, 1188200870
+de.eorganization.crawler.client.model.Software, true, true, false, false, de.eorganization.crawler.client.model.Software/888463215, 888463215
+[Lde.eorganization.crawler.client.model.Software;, true, true, false, false, [Lde.eorganization.crawler.client.model.Software;/1111386521, 1111386521
 de.eorganization.crawler.client.model.UserRole, true, true, true, true, de.eorganization.crawler.client.model.UserRole/3157516295, 3157516295
 de.eorganization.crawler.client.services.CrawlerService, false, false, false, false, _, 3549552594
 java.lang.Exception, true, false, true, false, java.lang.Exception/1920171873, 1920171873
-java.lang.Long, true, true, false, false, java.lang.Long/4227064769, 4227064769
-java.lang.Number, true, false, false, false, java.lang.Number/300033342, 300033342
+java.lang.Long, true, true, true, true, java.lang.Long/4227064769, 4227064769
+java.lang.Number, true, false, true, false, java.lang.Number/300033342, 300033342
 java.lang.RuntimeException, true, false, true, false, java.lang.RuntimeException/515124647, 515124647
 java.lang.String, true, true, true, true, java.lang.String/2004016611, 2004016611
 java.lang.Throwable, true, false, true, false, java.lang.Throwable/2953622131, 2953622131

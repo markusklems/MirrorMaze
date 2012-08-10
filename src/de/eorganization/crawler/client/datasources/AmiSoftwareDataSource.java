@@ -12,53 +12,40 @@ import com.smartgwt.client.data.DSRequest;
 import com.smartgwt.client.data.DSResponse;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
 
-import de.eorganization.crawler.client.Crawler.Repository;
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
-import de.eorganization.crawler.client.model.Ami;
+import de.eorganization.crawler.client.model.Software;
 import de.eorganization.crawler.client.services.CrawlerService;
 import de.eorganization.crawler.client.services.CrawlerServiceAsync;
 
 
-public class AmisDataSource extends GwtRpcDataSource {
+public class AmiSoftwareDataSource extends GwtRpcDataSource {
 	
-	private Logger log = Logger.getLogger(AmisDataSource.class.getName());
+	private Logger log = Logger.getLogger(AmiSoftwareDataSource.class.getName());
 
 	private String memberId;
+	
+	private Long amiId;
 	
 	/**
 	 * @param region
 	 */
-	public AmisDataSource(String memberId) {
+	public AmiSoftwareDataSource(String memberId, Long amiId) {
 		super();
 		this.memberId = memberId;
+		this.amiId = amiId;
 	}
 
-	public ListGridRecord[] createListGridRecords(List<Ami> amis) {
+	private ListGridRecord[] createListGridRecords(List<Software> software) {
 
-		ListGridRecord[] result = new ListGridRecord[amis.size()];
+		ListGridRecord[] result = new ListGridRecord[software.size()];
 
 		int i = 0;
 
-		for (Ami ami : amis) {
+		for (Software soft : software) {
 			result[i] = new ListGridRecord();
-			result[i].setAttribute("id", ami.getId());
-			result[i].setAttribute("name", ami.getName());
-			result[i].setAttribute("amiId", ami.getImageId());
-			result[i].setAttribute("repository", ami.getRepository());
-			result[i].setAttribute("location", ami.getImageLocation());
-			result[i].setAttribute("architecture", ami.getArchitecture());
-			result[i].setAttribute("ownerAlias", ami.getImageOwnerAlias());
-			result[i].setAttribute("ownerId", ami.getOwnerId());
-			result[i].setAttribute("description", ami.getDescription());
-			Repository repo = Repository.findByName(ami.getRepository());
-			result[i]
-					.setAttribute(
-							"executeLink",
-							repo != null ? "https://console.aws.amazon.com/ec2/home?region="
-									+ repo.getShortName()
-									+ "#launchAmi="
-									+ ami.getImageId()
-									: "");
+			result[i].setAttribute("id", soft.getId());
+			result[i].setAttribute("name", soft.getName());
+			result[i].setAttribute("version", soft.getVersion());
 
 			i++;
 		}
@@ -81,11 +68,11 @@ public class AmisDataSource extends GwtRpcDataSource {
 			criteria.put(attribute,
 					request.getCriteria().getValues().get(attribute));
 
-		mirrorMazeService.getAmis(memberId, criteria, start, end,
-				new AsyncCallback<ListResponse<Ami>>() {
+		mirrorMazeService.getAmiSoftware(memberId, amiId, criteria, start, end,
+				new AsyncCallback<ListResponse<Software>>() {
 
 					@Override
-					public void onSuccess(ListResponse<Ami> result) {
+					public void onSuccess(ListResponse<Software> result) {
 						log.info("got result for ami data source " + result);
 						response.setData(createListGridRecords(result.getList()));
 						response.setTotalRows(new Long(result.getTotalRecords()).intValue());

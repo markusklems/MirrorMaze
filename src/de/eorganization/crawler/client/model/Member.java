@@ -23,7 +23,7 @@ public class Member implements Serializable {
 
 	private String nickname;
 
-	private UserRole role;
+	private UserRole role = UserRole.USER;
 
 	private String firstname;
 	

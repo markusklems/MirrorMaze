@@ -8,7 +8,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
 import de.eorganization.crawler.client.model.Ami;
 import de.eorganization.crawler.client.model.Member;
-
+import de.eorganization.crawler.client.model.Software;
 
 @RemoteServiceRelativePath("crawler")
 public interface CrawlerService extends RemoteService {
@@ -20,18 +20,22 @@ public interface CrawlerService extends RemoteService {
 
 	public boolean importJSONFromS3(String S3Bucket);
 
-	public ListResponse<Ami> getAmis(Map<String,Object> criteria, int startRow, int endRow);
+	public ListResponse<Ami> getAmis(String memberId, Map<String, Object> criteria,
+			int startRow, int endRow);
 
 	public Map<String, Long> getSoftwarePackagesPieData(String region);
 
 	public Map<String, Long> getAmiOwnersPieData(String region);
 
-	public long getNumberAmis(Map<String,Object> criteria);
+	public long getNumberAmis(String memberId, Map<String, Object> criteria);
 
 	public long getNumberAllAmis(Map<String, Object> criteria);
 
 	public Member updateMember(Member member);
-	
+
 	public void resetAmiCounters();
+
+	public ListResponse<Software> getAmiSoftware(String memberId, Long amiId,
+			Map<String, Object> criteria, int startRow, int endRow);
 
 }

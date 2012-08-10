@@ -15,7 +15,7 @@
 
 	<!-- Default page to serve -->
 	<welcome-file-list>
-		<welcome-file>Crawler.html</welcome-file>
+		<welcome-file>index.html</welcome-file>
 	</welcome-file-list>
 
 	<!-- Filters -->
@@ -48,7 +48,31 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>loginServlet</servlet-name>
-		<url-pattern>/crawler/login</url-pattern>
+		<url-pattern>crawler/login</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>OAuth2LoginServlet</servlet-name>
+		<servlet-class>de.eorganization.crawler.server.servlets.OAuth2LoginServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>OAuth2LoginServlet</servlet-name>
+		<url-pattern>crawler/login/oauth2</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>OAuth2CallbackServlet</servlet-name>
+		<servlet-class>de.eorganization.crawler.server.servlets.OAuth2CallbackServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>OAuth2CallbackServlet</servlet-name>
+		<url-pattern>crawler/login/oauth2callback</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>OAuth2LogoutServlet</servlet-name>
+		<servlet-class>de.eorganization.crawler.server.servlets.OAuth2LogoutServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>OAuth2LogoutServlet</servlet-name>
+		<url-pattern>crawler/logout/oauth2</url-pattern>
 	</servlet-mapping>
 
 	<servlet>

@@ -18,6 +18,7 @@ import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 
+import de.eorganization.crawler.client.gui.MemberUpdatedHandler;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.services.CrawlerService;
 import de.eorganization.crawler.client.services.CrawlerServiceAsync;
@@ -29,6 +30,8 @@ import de.eorganization.crawler.client.services.CrawlerServiceAsync;
 public class ProfileWindow extends Window {
 
 	private Member member;
+	
+	private MemberUpdatedHandler updatedHandler;
 
 	private DynamicForm form = new DynamicForm();
 
@@ -45,8 +48,9 @@ public class ProfileWindow extends Window {
 	/**
 	 * 
 	 */
-	public ProfileWindow(Member member) {
+	public ProfileWindow(Member member, MemberUpdatedHandler handler) {
 		this.member = member;
+		this.updatedHandler = handler;
 		createWindowLayout();
 	}
 
@@ -100,6 +104,7 @@ public class ProfileWindow extends Window {
 
 							@Override
 							public void onSuccess(Member result) {
+								updatedHandler.updated(result);
 								destroy();
 								SC.say("Saved.");
 							}

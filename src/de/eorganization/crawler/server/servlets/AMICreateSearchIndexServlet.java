@@ -1,7 +1,6 @@
 package de.eorganization.crawler.server.servlets;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,7 +21,6 @@ import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
-import com.google.appengine.api.search.ListRequest;
 import com.google.appengine.api.search.SearchServiceFactory;
 
 public class AMICreateSearchIndexServlet extends HttpServlet {
@@ -121,6 +119,7 @@ public class AMICreateSearchIndexServlet extends HttpServlet {
 																.getName() : ""))
 								.build());
 					addedDocs++;
+					System.gc();
 				}
 			} catch (Exception e) {
 				log.log(Level.WARNING, e.getLocalizedMessage(), e);

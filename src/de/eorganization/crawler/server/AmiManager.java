@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.amazonaws.auth.PropertiesCredentials;
@@ -19,7 +20,6 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.google.appengine.api.backends.BackendServiceFactory;
-import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
@@ -147,15 +147,14 @@ public class AmiManager {
 		return getAmis(memberId, region, 0, -1);
 	}
 
-	public static ListResponse<Ami> getAmis(Map<String, Object> criteria) {
-		return getAmis(criteria, 0, -1);
+	public static ListResponse<Ami> getAmis(String memberId, Map<String, Object> criteria) {
+		return getAmis(memberId, criteria, 0, -1);
 	}
 
-	public static ListResponse<Ami> getAmis(Map<String, Object> criteria,
+	public static ListResponse<Ami> getAmis(String memberId, Map<String, Object> criteria,
 			int startRow, int endRow) {
 		log.info("getting amis for criteria " + criteria);
 		String region = (String) criteria.get("region");
-		String memberId = (String) criteria.get("memberId");
 		String query = (String) criteria.get("query");
 		if (query == null)
 			return getAmis(memberId, region, startRow, endRow);
@@ -175,6 +174,7 @@ public class AmiManager {
 			for (ScoredDocument sd : results.getResults())
 				amis.add(dao.ofy().get(Ami.class, new Long(sd.getId())));
 		} catch (Exception e) {
+			log.log(Level.WARNING, e.getLocalizedMessage(), e);
 		}
 		return new ListResponse<Ami>(amis.size(), amis);
 
@@ -184,29 +184,23 @@ public class AmiManager {
 			int startRow, int endRow) {
 
 		try {
-			log.finer("request for region " + region + " from " + startRow
-					+ " to " + endRow);
+			log.info("request for Amis in region " + region + " from "
+					+ startRow + " to " + endRow);
 
-			QueryResultIterable<Key<Ami>> keys = null;
-			boolean regionAll = "all".equals(region) || "".equals(region)
-					|| region == null;
+			List<Ami> amis = null;
 
 			long total = getNumberAmis(memberId, region, null);
 			endRow = endRow > total ? new Long(total).intValue() : endRow;
 			int size = endRow - startRow > -1 ? endRow - startRow : 0;
 			if (size > 0)
-				keys = regionAll ? dao.ofy().query(Ami.class).offset(startRow)
-						.limit(size).chunkSize(size).fetchKeys() : dao.ofy()
-						.query(Ami.class).filter("repository", region)
-						.offset(startRow).limit(size).chunkSize(size)
-						.fetchKeys();
+				amis = dao.getAmis(region, startRow, size);
 
-			log.fine("fetched for region " + region + " # " + size
-					+ " from a total of " + total + " records: " + keys);
+			log.info("fetched Amis for region " + region + " # " + size
+					+ " from a total of " + total + " records.");
 
-			return keys != null ? new ListResponse<Ami>(total,
-					new ArrayList<Ami>(dao.ofy().get(keys).values()))
-					: new ListResponse<Ami>(total, new ArrayList<Ami>());
+			return amis != null ? new ListResponse<Ami>(total,
+					new ArrayList<Ami>(amis)) : new ListResponse<Ami>(0,
+					new ArrayList<Ami>());
 		} catch (Exception e) {
 			return new ListResponse<Ami>(0, new ArrayList<Ami>());
 		}
@@ -322,9 +316,8 @@ public class AmiManager {
 
 	}
 
-	public static long getNumberAmis(Map<String, Object> criteria) {
+	public static long getNumberAmis(String memberId, Map<String, Object> criteria) {
 		String region = (String) criteria.get("region");
-		String memberId = (String) criteria.get("memberId");
 		String query = (String) criteria.get("query");
 		return getNumberAmis(memberId, region, query);
 	}
@@ -371,12 +364,46 @@ public class AmiManager {
 	}
 
 	public static void resetAmiCounters() {
-
 		Queue queue = QueueFactory.getQueue("ami-crawler-queue");
 		queue.add(withUrl("/crawler/resetCounterAMI").header(
 				"Host",
 				BackendServiceFactory.getBackendService().getBackendAddress(
 						"ami-crawler")));
+	}
+
+	public static ListResponse<Software> getAmiSoftware(String memberId,
+			Long amiId, Map<String, Object> criteria, int startRow, int endRow) {
+
+		try {
+			log.info("request for Software of Ami " + amiId + " from "
+					+ startRow + " to " + endRow);
+
+			List<Software> software = null;
+
+			long total = getNumberAmiSoftware(memberId, amiId);
+			endRow = endRow > total ? new Long(total).intValue() : endRow;
+			int size = endRow - startRow > -1 ? endRow - startRow : 0;
+			if (size > 0)
+				software = dao.getAmiSoftware(amiId, startRow, size);
+
+			log.info("fetched Software for Ami " + amiId + " # " + size
+					+ " from a total of " + total + " records.");
+
+			return software != null ? new ListResponse<Software>(total,
+					new ArrayList<Software>(software))
+					: new ListResponse<Software>(0, new ArrayList<Software>());
+		} catch (Exception e) {
+			return new ListResponse<Software>(0, new ArrayList<Software>());
+		}
+
+	}
+
+	private static long getNumberAmiSoftware(String memberId, Long amiId) {
+		if (getMember(memberId) == null
+				|| getMember(memberId).getRole() == UserRole.USER)
+			return 10;
+
+		return dao.getNumberAmiSoftware(amiId);
 	}
 
 }

@@ -1,12 +1,14 @@
 package de.eorganization.crawler.server.services;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
 import de.eorganization.crawler.client.model.Ami;
 import de.eorganization.crawler.client.model.Member;
+import de.eorganization.crawler.client.model.Software;
 import de.eorganization.crawler.client.model.UserRole;
 import de.eorganization.crawler.client.services.CrawlerService;
 import de.eorganization.crawler.server.AmiManager;
@@ -16,6 +18,8 @@ import de.eorganization.crawler.server.AmiManager;
 public class CrawlerServiceImpl extends RemoteServiceServlet implements
 		CrawlerService {
 
+	private Logger log = Logger.getLogger(CrawlerServiceImpl.class.getName());
+	
 	@Override
 	public void saveAmi(String repository, String imageId,
 			String imageLocation, String imageOwnerAlias, String ownerId,
@@ -31,20 +35,20 @@ public class CrawlerServiceImpl extends RemoteServiceServlet implements
 	}
 
 	@Override
-	public ListResponse<Ami> getAmis(Map<String, Object> criteria,
+	public ListResponse<Ami> getAmis(String memberId, Map<String, Object> criteria,
 			int startRow, int endRow) {
-		return AmiManager.getAmis(criteria, startRow, endRow);
+		log.info("getAmis with " + memberId + ", " + criteria + ", " + startRow + ", " + endRow);
+		return AmiManager.getAmis(memberId, criteria, startRow, endRow);
 	}
 
 	@Override
-	public long getNumberAmis(Map<String, Object> criteria) {
-		return AmiManager.getNumberAmis(criteria);
+	public long getNumberAmis(String memberId, Map<String, Object> criteria) {
+		return AmiManager.getNumberAmis(memberId, criteria);
 	}
 
 	@Override
 	public long getNumberAllAmis(Map<String, Object> criteria) {
-		criteria.put("memberId", UserRole.ADMIN.getDefaultMemberId());
-		return AmiManager.getNumberAmis(criteria);
+		return AmiManager.getNumberAmis(UserRole.ADMIN.getDefaultMemberId(), criteria);
 	}
 
 	@Override
@@ -62,8 +66,14 @@ public class CrawlerServiceImpl extends RemoteServiceServlet implements
 		return AmiManager.updateMember(member);
 	}
 	
+	@Override
 	public void resetAmiCounters() {
 		AmiManager.resetAmiCounters();
+	}
+	
+	@Override
+	public ListResponse<Software> getAmiSoftware(String memberId, Long amiId, Map<String,Object> criteria, int startRow, int endRow) {
+		return AmiManager.getAmiSoftware(memberId, amiId, criteria, startRow, endRow);
 	}
 
 }

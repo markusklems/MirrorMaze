@@ -11,19 +11,27 @@
 	<!-- Admin Console -->
 	<admin-console>
 		<page name="Entity Console" url="/entity-console/main" />
-        <page name="Appstats" url="/appstats" />
-    </admin-console>
+		<page name="Appstats" url="/appstats" />
+	</admin-console>
 
 	<!-- Configure serving/caching of GWT files -->
 	<static-files>
 		<include path="**" />
+		<include path="index.html" expiration="30d" />
 
 		<!-- The following line requires App Engine 1.3.2 SDK -->
 		<include path="**.nocache.*" expiration="0s" />
 
 		<include path="**.cache.*" expiration="365d" />
+		<include path="crawler/js/*.js" expiration="30d" />
+
 		<exclude path="**.gwt.rpc" />
 	</static-files>
+	<resource-files>
+		<include path="crawler/*.gwt.rpc" />
+		<include path="crawler/*.nocache.*" />
+	</resource-files>
+
 
 	<!-- Configure java.util.logging -->
 	<system-properties>

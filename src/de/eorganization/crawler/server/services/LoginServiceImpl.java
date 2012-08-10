@@ -1,33 +1,42 @@
 package de.eorganization.crawler.server.services;
 
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
-import com.google.appengine.api.users.UserServiceFactory;
+import javax.servlet.http.Cookie;
+
+import org.json.JSONObject;
+import org.scribe.model.OAuthRequest;
+import org.scribe.model.Response;
+import org.scribe.model.Token;
+import org.scribe.model.Verb;
+import org.scribe.oauth.OAuthService;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import de.eorganization.crawler.client.model.LoginInfo;
+import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.services.LoginService;
-import de.eorganization.crawler.server.AmiManager;
-
+import de.eorganization.crawler.server.OAuth2Provider;
+import de.eorganization.crawler.server.servlets.util.CookiesUtil;
 
 /**
  * 
  * @author mugglmenzel
- *
+ * 
  *         Author: Michael Menzel (mugglmenzel)
  * 
  *         Last Change:
- *           
- *           By Author: $Author: mugglmenzel $ 
- *         
- *           Revision: $Revision: 170 $ 
- *         
- *           Date: $Date: 2011-08-05 16:48:05 +0200 (Fr, 05 Aug 2011) $
+ * 
+ *         By Author: $Author: mugglmenzel $
+ * 
+ *         Revision: $Revision: 170 $
+ * 
+ *         Date: $Date: 2011-08-05 16:48:05 +0200 (Fr, 05 Aug 2011) $
  * 
  *         License:
- *         
+ * 
  *         Copyright 2011 Forschungszentrum Informatik FZI / Karlsruhe Institute
  *         of Technology
  * 
@@ -43,39 +52,136 @@ import de.eorganization.crawler.server.AmiManager;
  *         implied. See the License for the specific language governing
  *         permissions and limitations under the License.
  * 
- *         
- *         SVN URL: 
- *         $HeadURL: https://aotearoadecisions.googlecode.com/svn/trunk/src/main/java/de/fzi/aotearoa/server/services/LoginServiceImpl.java $
- *
+ * 
+ *         SVN URL: $HeadURL:
+ *         https://aotearoadecisions.googlecode.com/svn/trunk/
+ *         src/main/java/de/fzi/aotearoa/server/services/LoginServiceImpl.java $
+ * 
  */
 
-public class LoginServiceImpl extends RemoteServiceServlet implements LoginService {
+public class LoginServiceImpl extends RemoteServiceServlet implements
+		LoginService {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1447714256662875710L;
-	
+
 	private Logger log = Logger.getLogger(LoginServiceImpl.class.getName());
 
-	private UserService userService = UserServiceFactory.getUserService();
+	// private UserService userService = UserServiceFactory.getUserService();
 
 	@Override
 	public LoginInfo login(String requestUri) {
-		User user = userService.getCurrentUser();
 		LoginInfo loginInfo = new LoginInfo();
+		loginInfo.setLoggedIn(false);
 
-		if (userService.isUserLoggedIn() && user != null) {
-			loginInfo.setLoggedIn(true);
-			loginInfo.setMember(AmiManager.saveOrGetMember(user));
-			loginInfo.setLogoutUrl(userService.createLogoutURL(requestUri));
-		} else {
-			loginInfo.setLoggedIn(false);
-			loginInfo.setLoginUrl(userService.createLoginURL(requestUri));
+		Map<String, String> cookies = CookiesUtil
+				.getCookiesStringMap(getThreadLocalRequest().getCookies());
+		log.info("Got cookies " + cookies);
+		String oauthService = cookies.get("oauth.service");
+
+		log.info("Logging in with OAuth service " + oauthService);
+
+		if (oauthService != null) {
+			try {
+				String accessTokenString = cookies.get("oauth.accessToken");
+				String accessSecret = cookies.get("oauth.secret");
+				if (accessTokenString == null || accessSecret == null)
+					return loginInfo;
+
+				log.info("Retrieved access token " + accessTokenString);
+
+				Cookie serviceTokenCookie = new Cookie("oauth.service",
+						accessTokenString);
+				serviceTokenCookie.setMaxAge(14 * 24 * 60 * 60);
+				serviceTokenCookie.setPath("/");
+				getThreadLocalResponse().addCookie(serviceTokenCookie);
+				Cookie accessTokenCookie = new Cookie("oauth.accessToken",
+						accessTokenString);
+				accessTokenCookie.setMaxAge(14 * 24 * 60 * 60);
+				accessTokenCookie.setPath("/");
+				getThreadLocalResponse().addCookie(accessTokenCookie);
+				Cookie accessSecretCookie = new Cookie("oauth.secret",
+						accessSecret);
+				accessSecretCookie.setMaxAge(14 * 24 * 60 * 60);
+				accessSecretCookie.setPath("/");
+				getThreadLocalResponse().addCookie(accessSecretCookie);
+
+				OAuth2Provider provider = OAuth2Provider.valueOf(oauthService);
+
+				OAuthService service = provider.getOAuthService();
+				Token accessToken = new Token(accessTokenString, accessSecret);
+				log.info("Token object " + accessToken.getToken() + ", "
+						+ accessToken.getSecret());
+
+				if (OAuth2Provider.GOOGLE.equals(provider)) {
+					OAuthRequest req = new OAuthRequest(Verb.GET,
+							"https://www.googleapis.com/oauth2/v1/userinfo");
+					service.signRequest(accessToken, req);
+					Response response = req.send();
+					log.info("Requested user info from google: "
+							+ response.getBody());
+
+					JSONObject googleUserInfo = new JSONObject(
+							response.getBody());
+					log.info("got user info: "
+							+ googleUserInfo.getString("given_name") + ", "
+							+ googleUserInfo.getString("family_name"));
+					Member tempMember = new Member();
+					tempMember.setEmail(googleUserInfo.getString("id"));
+					tempMember.setFirstname(googleUserInfo
+							.getString("given_name"));
+					tempMember.setLastname(googleUserInfo
+							.getString("family_name"));
+					tempMember.setNickname(googleUserInfo.getString("name"));
+					loginInfo.setMember(tempMember);
+					loginInfo.setLoggedIn(true);
+
+				} else if (OAuth2Provider.TWITTER.equals(provider)) {
+					OAuthRequest req = new OAuthRequest(Verb.GET,
+							"https://api.twitter.com/1/account/verify_credentials.json");
+					service.signRequest(accessToken, req);
+					log.info("Requesting from twitter " + req.getCompleteUrl());
+					Response response = req.send();
+					log.info("Requested user info from twitter: "
+							+ response.getBody());
+					JSONObject twitterUserInfo = new JSONObject(
+							response.getBody());
+					log.info("got user info: "
+							+ twitterUserInfo.getString("name") + ", "
+							+ twitterUserInfo.getString("screen_name"));
+					Member tempMember = new Member();
+					tempMember.setEmail(twitterUserInfo.getString("id"));
+					tempMember.setFirstname(twitterUserInfo.getString("name")
+							.split(" ")[0]);
+					tempMember.setLastname(twitterUserInfo.getString("name")
+							.split(" ", 2)[1]);
+					tempMember.setNickname(twitterUserInfo
+							.getString("screen_name"));
+					loginInfo.setMember(tempMember);
+					loginInfo.setLoggedIn(true);
+				}
+				loginInfo.setLogoutUrl("/crawler/logout/oauth2");
+				return loginInfo;
+			} catch (Exception e) {
+				log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			}
 		}
-		log.info("logged in " + loginInfo);
-		
+
+		/*
+		 * User user = userService.getCurrentUser();
+		 * 
+		 * if (userService.isUserLoggedIn() && user != null) {
+		 * loginInfo.setLoggedIn(true);
+		 * loginInfo.setMember(AmiManager.saveOrGetMember(user));
+		 * loginInfo.setLogoutUrl(userService.createLogoutURL(requestUri)); }
+		 * else { loginInfo.setLoginUrl(userService.createLoginURL(requestUri));
+		 * } log.info("logged in " + loginInfo);
+		 */
+
 		return loginInfo;
+
 	}
 
 }

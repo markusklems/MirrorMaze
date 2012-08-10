@@ -3,6 +3,7 @@
  */
 package de.eorganization.crawler.server.db.dao;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -202,5 +203,24 @@ public class MazeDAO extends DAOBase {
 	public Member updateMember(Member member) {
 		Key<Member> mbrKey = ofy().put(member);
 		return ofy().get(mbrKey);
+	}
+
+	public List<Software> getAmiSoftware(Long amiId, int start, int size) {
+		return ofy().query(Software.class)
+				.ancestor(ofy().get(Ami.class, amiId)).offset(start)
+				.limit(size).chunkSize(size).list();
+	}
+
+	public List<Ami> getAmis(String region, int start, int size) {
+		return isAmiAllOrRegion(region) ? ofy().query(Ami.class).offset(start)
+				.limit(size).chunkSize(size).list() : ofy().query(Ami.class)
+				.filter("repository", region).offset(start).limit(size)
+				.chunkSize(size).list();
+	}
+
+	public long getNumberAmiSoftware(Long amiId) {
+		return ofy().query(Software.class)
+				.ancestor(ofy().get(Ami.class, amiId)).count();
+
 	}
 }
