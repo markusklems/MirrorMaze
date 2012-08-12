@@ -13,6 +13,9 @@ import org.scribe.model.Token;
 import org.scribe.model.Verb;
 import org.scribe.oauth.OAuthService;
 
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import de.eorganization.crawler.client.model.LoginInfo;
@@ -69,8 +72,6 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 	private static final long serialVersionUID = 1447714256662875710L;
 
 	private Logger log = Logger.getLogger(LoginServiceImpl.class.getName());
-
-	// private UserService userService = UserServiceFactory.getUserService();
 
 	@Override
 	public LoginInfo login(String requestUri) {
@@ -142,7 +143,8 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 								.getString("family_name"));
 						tempMember
 								.setNickname(googleUserInfo.getString("name"));
-						tempMember.setProfilePic(googleUserInfo.getString("picture"));
+						tempMember.setProfilePic(googleUserInfo
+								.getString("picture"));
 					}
 					loginInfo.setMember(tempMember);
 					loginInfo.setLoggedIn(true);
@@ -174,7 +176,41 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 								.getString("name").split(" ", 2)[1]);
 						tempMember.setNickname(twitterUserInfo
 								.getString("screen_name"));
-						tempMember.setProfilePic(twitterUserInfo.getString("profile_image_url"));
+						tempMember.setProfilePic(twitterUserInfo
+								.getString("profile_image_url"));
+					}
+					loginInfo.setMember(tempMember);
+					loginInfo.setLoggedIn(true);
+				} else if (OAuth2Provider.FACEBOOK.equals(provider)) {
+					OAuthRequest req = new OAuthRequest(Verb.GET,
+							"https://graph.facebook.com/me");
+					service.signRequest(accessToken, req);
+					log.info("Requesting from facebook " + req.getCompleteUrl());
+					Response response = req.send();
+					log.info("Requested user info from facebook: "
+							+ response.getBody());
+					JSONObject facebookUserInfo = new JSONObject(
+							response.getBody());
+					log.info("got user info: "
+							+ facebookUserInfo.getString("name") + ", "
+							+ facebookUserInfo.getString("username"));
+
+					Member tempMember = AmiManager
+							.findMemberBySocialId(facebookUserInfo
+									.getString("id"));
+					if (tempMember == null) {
+						tempMember = new Member();
+						tempMember.setSocialId(new Integer(facebookUserInfo
+								.getInt("id")).toString());
+						tempMember.setFirstname(facebookUserInfo
+								.getString("first_name"));
+						tempMember.setLastname(facebookUserInfo
+								.getString("last_name"));
+						tempMember.setNickname(facebookUserInfo
+								.getString("username"));
+						tempMember.setProfilePic("https://graph.facebook.com/"
+								+ facebookUserInfo.getString("username")
+								+ "/picture");
 					}
 					loginInfo.setMember(tempMember);
 					loginInfo.setLoggedIn(true);
@@ -184,21 +220,22 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 			} catch (Exception e) {
 				log.log(Level.WARNING, e.getLocalizedMessage(), e);
 			}
-		}
+		} else {
 
-		/*
-		 * User user = userService.getCurrentUser();
-		 * 
-		 * if (userService.isUserLoggedIn() && user != null) {
-		 * loginInfo.setLoggedIn(true);
-		 * loginInfo.setMember(AmiManager.saveOrGetMember(user));
-		 * loginInfo.setLogoutUrl(userService.createLogoutURL(requestUri)); }
-		 * else { loginInfo.setLoginUrl(userService.createLoginURL(requestUri));
-		 * } log.info("logged in " + loginInfo);
-		 */
+			UserService userService = UserServiceFactory.getUserService();
+			User user = userService.getCurrentUser();
+
+			if (userService.isUserLoggedIn() && user != null) {
+				loginInfo.setLoggedIn(true);
+				loginInfo.setMember(AmiManager.saveOrGetMember(user));
+				loginInfo.setLogoutUrl(userService.createLogoutURL(requestUri));
+			} else {
+				loginInfo.setLoginUrl(userService.createLoginURL(requestUri));
+			}
+			log.info("logged in with google services " + loginInfo);
+		}
 
 		return loginInfo;
 
 	}
-
 }

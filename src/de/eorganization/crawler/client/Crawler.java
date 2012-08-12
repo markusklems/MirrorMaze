@@ -181,9 +181,6 @@ public class Crawler implements EntryPoint {
 		masterLayout.addMember(createSearchLayout());
 		masterLayout.addMember(createTabLayout());
 
-		if (getMember() != null && UserRole.ADMIN.equals(getMember().getRole()))
-			masterLayout.addMember(createAdminlayout());
-
 		masterLayout.setWidth100();
 		masterLayout.setHeight100();
 		masterLayout.setMaxHeight(700);
@@ -206,27 +203,35 @@ public class Crawler implements EntryPoint {
 				.toSafeHtml(), GWT.getHostPageBaseURL(), "_top");
 
 		HLayout login = new HLayout();
+		login.setStyleName("login");
 		login.setMembersMargin(15);
 		login.setAlign(Alignment.RIGHT);
 
 		Img profileImg = new Img();
-		profileImg.setHeight(20);
+		profileImg.setHeight(30);
+		profileImg.setAutoWidth();
 		// profileImg.setMaxWidth(50);
 
 		welcomeLabel.setAutoWidth();
 		welcomeLabel.setWrap(false);
+		welcomeLabel.setStyleName("login");
 
 		profileAnchor.setWordWrap(false);
 
 		Label loginDivider = new Label(
 				"<span style=\"font-size: 25px\">|</span>");
 		loginDivider.setAutoWidth();
+		loginDivider.setStyleName("login");
 
 		loginAnchor.setWordWrap(false);
+		loginAnchor.setStyleName("login");
 
 		if (loginInfo.isLoggedIn() && getMember() != null) {
 			profileImg.setSrc(getMember().getProfilePic());
 			welcomeLabel.setContents("");
+			welcomeLabel.setWidth(0);
+			welcomeLabel.setVisible(false);
+
 			profileAnchor.setHTML("<span style=\"font-size: 20pt\">"
 					+ getMember().getNickname() + "</span>");
 			profileAnchor
@@ -250,11 +255,12 @@ public class Crawler implements EntryPoint {
 			loginAnchor
 					.setHTML("<span style=\"font-size: 20pt\">Logout</span>");
 		} else {
-
+			profileImg.setVisible(false);
 			welcomeLabel
 					.setContents("<span style=\"font-size: 20pt\">Not logged in</span>");
 			profileAnchor.setEnabled(false);
 			profileAnchor.setVisible(false);
+			profileAnchor.setWidth("0px");
 
 			loginAnchor
 					.addClickHandler(new com.google.gwt.event.dom.client.ClickHandler() {
@@ -285,7 +291,7 @@ public class Crawler implements EntryPoint {
 		searchLayout.setWidth100();
 		searchLayout.setBackgroundColor("#ffffff");
 		DynamicForm searchForm = new DynamicForm();
-		searchForm.setWidth(400);
+		searchForm.setAutoWidth();
 		final TextItem searchQuery = new TextItem("Search");
 		searchQuery.setWrapTitle(false);
 		searchQuery.addKeyPressHandler(new KeyPressHandler() {
@@ -372,6 +378,8 @@ public class Crawler implements EntryPoint {
 		tabs.addTab(new Tab("Compare AMIs"));
 		tabs.addTab(new Tab("Scan AMI"));
 		tabs.addTab(createStatisticsTab());
+		if (getMember() != null && UserRole.ADMIN.equals(getMember().getRole()))
+			tabs.addTab(createAdminTab());
 
 		return tabs;
 	}
@@ -425,7 +433,7 @@ public class Crawler implements EntryPoint {
 		amis.setCriteria(new Criteria("region", Repository.EU_1.getName()));
 		amis.setAutoFetchData(true);
 		amis.setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
-		amis.setDataPageSize(20);
+		amis.setDataPageSize(10);
 		amis.addRecordDoubleClickHandler(new RecordDoubleClickHandler() {
 
 			@Override
@@ -549,10 +557,11 @@ public class Crawler implements EntryPoint {
 		return statsTab;
 	}
 
-	private Layout createAdminlayout() {
-		HLayout adminLayout = new HLayout();
-		adminLayout.setVisible(getMember() != null
-				&& UserRole.ADMIN.equals(getMember().getRole()));
+	private Tab createAdminTab() {
+		Tab adminTab = new Tab("Admin");
+		adminTab.setDisabled(!(getMember() != null && UserRole.ADMIN
+				.equals(getMember().getRole())));
+		VLayout adminLayout = new VLayout();
 		IButton resetAmiCountersButton = new IButton("Reset Ami Counters",
 				new ClickHandler() {
 
@@ -587,7 +596,8 @@ public class Crawler implements EntryPoint {
 				});
 		adminLayout.addMember(resetAmiCountersButton);
 
-		return adminLayout;
+		adminTab.setPane(adminLayout);
+		return adminTab;
 	}
 
 	private void refresh() {

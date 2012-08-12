@@ -6,6 +6,7 @@ package de.eorganization.crawler.server;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.Api;
 import org.scribe.builder.api.DefaultApi20;
+import org.scribe.builder.api.FacebookApi;
 import org.scribe.builder.api.GoogleApi20;
 import org.scribe.builder.api.TwitterApi;
 import org.scribe.model.OAuthConstants;
@@ -24,7 +25,10 @@ public enum OAuth2Provider {
 			new GoogleApi20()), TWITTER("Twitter", "Kbp5FxjWtTBzsAxcBLRdyg",
 			"1TBvJJuaFzOodHalzk9JQ6Y5mwcc2ybvNCALWQJKMww", null,
 			"http://crawlerride.appspot.com/crawler/login/oauth2callback",
-			new TwitterApi());
+			new TwitterApi()), FACEBOOK("Facebook", "245033985617800",
+			"3c682b41d1d072386d056eda7890e2e8", null,
+			"http://crawlerride.appspot.com/crawler/login/oauth2callback",
+			new FacebookApi());
 
 	private String name;
 

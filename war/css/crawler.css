@@ -1,0 +1,12 @@
+@CHARSET "ISO-8859-1";
+
+body {
+	background-color: #000000;
+	background-image: url('../images/bg-space.jpeg');
+	background-repeat: repeat-x;
+	color: #ffffff;
+}
+
+.login {
+	color: #ffffff !important;
+}

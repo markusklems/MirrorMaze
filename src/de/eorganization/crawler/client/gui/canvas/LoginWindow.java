@@ -4,9 +4,13 @@
 package de.eorganization.crawler.client.gui.canvas;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.ui.Anchor;
+import com.smartgwt.client.widgets.HTMLFlow;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.Window;
+import com.smartgwt.client.widgets.form.DynamicForm;
+import com.smartgwt.client.widgets.form.fields.ButtonItem;
+import com.smartgwt.client.widgets.form.fields.PasswordItem;
+import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.layout.VLayout;
 
 /**
@@ -29,9 +33,8 @@ public class LoginWindow extends Window {
 
 		setTitle("Login required");
 		setWidth(700);
-		setHeight("70%");
+		setHeight(500);
 		setShowMinimizeButton(false);
-		setShowCloseButton(false);
 		setIsModal(true);
 		setShowModalMask(true);
 		centerInPage();
@@ -40,24 +43,48 @@ public class LoginWindow extends Window {
 		windowLayout.setMargin(10);
 		windowLayout.setMembersMargin(10);
 
+		DynamicForm loginForm = new DynamicForm();
+		TextItem emailItem = new TextItem("email", "Email");
+		emailItem.setRequired(true);
+		PasswordItem passwordItem = new PasswordItem("password", "Password");
+		passwordItem.setRequired(true);
+		ButtonItem submitButton = new ButtonItem("loginButton", "Login");
+		loginForm.setFields(emailItem, passwordItem, submitButton);
+
 		Label welcomeLabel = new Label(
 				"<span style=\"font-size: 20px\">Please Login to access the Crawler.</span>");
-		// Anchor loginAnchor = new Anchor("Login with Google Account",
-		// loginURL, "_top");
-		Anchor googleOAuth2 = new Anchor(
-				"<img src=\"/images/signin/google.png\" alt=\"sign in with google\"/ style=\"height: 30px\">",
-				true, GWT.getModuleBaseURL()
-						+ "login/oauth2?signInService=GOOGLE", "_top");
+		HTMLFlow facebookOAuth2 = new HTMLFlow(
+				"<a href=\""
+						+ GWT.getModuleBaseURL()
+						+ "login/oauth2?signInService=FACEBOOK\" target=\"_top\" class=\"zocial facebook\">Sign in with Facebook</a>");
+		facebookOAuth2.setWidth(200);
 
-		Anchor twitterOAuth2 = new Anchor(
-				"<img src=\"/images/signin/twitter.png\" alt=\"sign in with twitter\"/ style=\"height: 30px\">",
-				true, GWT.getModuleBaseURL()
-						+ "login/oauth2?signInService=TWITTER", "_top");
+		HTMLFlow twitterOAuth2 = new HTMLFlow(
+				"<a href=\""
+						+ GWT.getModuleBaseURL()
+						+ "login/oauth2?signInService=TWITTER\" target=\"_top\"><img src=\"/images/signin/twitter.png\" alt=\"Sign in with Twitter\"/ style=\"width: 200px\"></a>");
+		twitterOAuth2.setWidth(200);
+		twitterOAuth2.setHeight(32);
+
+		HTMLFlow googleOAuth2 = new HTMLFlow(
+				"<a href=\""
+						+ GWT.getModuleBaseURL()
+						+ "login/oauth2?signInService=GOOGLE\" target=\"_top\" class=\"zocial googleplus\">Sign in with Google+</a>");
+		googleOAuth2.setWidth(200);
+
+		HTMLFlow loginAnchor = new HTMLFlow(
+				"<a href=\""
+						+ loginURL
+						+ "\" target=\"_top\" class=\"zocial google\">Sign in with Google</a>");
+		loginAnchor.setWidth(200);
 
 		windowLayout.addMember(welcomeLabel);
-		// windowLayout.addMember(loginAnchor);
-		windowLayout.addMember(googleOAuth2);
+		windowLayout.addMember(loginForm);
+		windowLayout.addMember(new Label("<hr/>"));
+		windowLayout.addMember(facebookOAuth2);
 		windowLayout.addMember(twitterOAuth2);
+		windowLayout.addMember(googleOAuth2);
+		windowLayout.addMember(loginAnchor);
 
 		addItem(windowLayout);
 

@@ -121,7 +121,8 @@ public class RegisterWindow extends Window {
 									if (member != null) {
 										updatedHandler.updated(result);
 										destroy();
-										SC.say("Saved.");
+										com.google.gwt.user.client.Window.Location
+												.assign(GWT.getModuleBaseURL());
 									} else
 										SC.warn("Email address already in use!");
 								}

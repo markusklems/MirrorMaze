@@ -200,7 +200,7 @@ public class AmiManager {
 					+ " from a total of " + total + " records.");
 
 			return amis != null ? new ListResponse<Ami>(total,
-					new ArrayList<Ami>(amis)) : new ListResponse<Ami>(0,
+					new ArrayList<Ami>(amis)) : new ListResponse<Ami>(total,
 					new ArrayList<Ami>());
 		} catch (Exception e) {
 			return new ListResponse<Ami>(0, new ArrayList<Ami>());
