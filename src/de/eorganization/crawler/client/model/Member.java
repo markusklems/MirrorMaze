@@ -20,9 +20,9 @@ public class Member implements Serializable {
 
 	@Id
 	private String email;
-	
+
 	private String socialId;
-	
+
 	private String profilePic;
 
 	private String nickname;
@@ -30,9 +30,9 @@ public class Member implements Serializable {
 	private UserRole role = UserRole.USER;
 
 	private String firstname;
-	
+
 	private String lastname;
-		
+
 	private String AWSSecretKey;
 
 	private String AWSAccessKey;
@@ -125,14 +125,16 @@ public class Member implements Serializable {
 	}
 
 	/**
-	 * @param firstname the firstname to set
+	 * @param firstname
+	 *            the firstname to set
 	 */
 	public void setFirstname(String firstname) {
 		this.firstname = firstname;
 	}
 
 	/**
-	 * @param lastname the lastname to set
+	 * @param lastname
+	 *            the lastname to set
 	 */
 	public void setLastname(String lastname) {
 		this.lastname = lastname;
@@ -153,14 +155,16 @@ public class Member implements Serializable {
 	}
 
 	/**
-	 * @param aWSSecretKey the aWSSecretKey to set
+	 * @param aWSSecretKey
+	 *            the aWSSecretKey to set
 	 */
 	public void setAWSSecretKey(String aWSSecretKey) {
 		AWSSecretKey = aWSSecretKey;
 	}
 
 	/**
-	 * @param aWSAccessKey the aWSAccessKey to set
+	 * @param aWSAccessKey
+	 *            the aWSAccessKey to set
 	 */
 	public void setAWSAccessKey(String aWSAccessKey) {
 		AWSAccessKey = aWSAccessKey;
@@ -174,7 +178,8 @@ public class Member implements Serializable {
 	}
 
 	/**
-	 * @param socialId the socialId to set
+	 * @param socialId
+	 *            the socialId to set
 	 */
 	public void setSocialId(String socialId) {
 		this.socialId = socialId;
@@ -188,10 +193,32 @@ public class Member implements Serializable {
 	}
 
 	/**
-	 * @param profilePic the profilePic to set
+	 * @param profilePic
+	 *            the profilePic to set
 	 */
 	public void setProfilePic(String profilePic) {
 		this.profilePic = profilePic;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Member ["
+				+ (email != null ? "email=" + email + ", " : "")
+				+ (socialId != null ? "socialId=" + socialId + ", " : "")
+				+ (profilePic != null ? "profilePic=" + profilePic + ", " : "")
+				+ (nickname != null ? "nickname=" + nickname + ", " : "")
+				+ (role != null ? "role=" + role + ", " : "")
+				+ (firstname != null ? "firstname=" + firstname + ", " : "")
+				+ (lastname != null ? "lastname=" + lastname + ", " : "")
+				+ (AWSSecretKey != null ? "AWSSecretKey=" + AWSSecretKey + ", "
+						: "")
+				+ (AWSAccessKey != null ? "AWSAccessKey=" + AWSAccessKey : "")
+				+ "]";
 	}
 
 }

@@ -6,6 +6,7 @@ package de.eorganization.crawler.client.gui.canvas;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.types.Alignment;
+import com.smartgwt.client.types.ImageStyle;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.IButton;
 import com.smartgwt.client.widgets.Img;
@@ -19,6 +20,7 @@ import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 
+import de.eorganization.crawler.client.gui.ImageUtil;
 import de.eorganization.crawler.client.gui.MemberUpdatedHandler;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.services.CrawlerService;
@@ -72,10 +74,9 @@ public class ProfileWindow extends Window {
 			}
 		});
 
-		Img profileImg = new Img();
-		profileImg.setSrc(member.getProfilePic());
-		profileImg.setMaxWidth(100);
-		profileImg.setHeight(100);
+		Img profileImg = new Img(member.getProfilePic(), 100,
+				ImageUtil.getScaledImageHeight(member.getProfilePic(), 100));
+		profileImg.setImageType(ImageStyle.STRETCH);
 
 		emailItem.setValue(member.getEmail());
 		emailItem.setDisabled(true);

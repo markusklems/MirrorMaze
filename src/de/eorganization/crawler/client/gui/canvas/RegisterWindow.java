@@ -6,6 +6,7 @@ package de.eorganization.crawler.client.gui.canvas;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.types.Alignment;
+import com.smartgwt.client.types.ImageStyle;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.IButton;
 import com.smartgwt.client.widgets.Img;
@@ -15,11 +16,13 @@ import com.smartgwt.client.widgets.events.ClickHandler;
 import com.smartgwt.client.widgets.events.CloseClickEvent;
 import com.smartgwt.client.widgets.events.CloseClickHandler;
 import com.smartgwt.client.widgets.form.DynamicForm;
+import com.smartgwt.client.widgets.form.fields.HeaderItem;
 import com.smartgwt.client.widgets.form.fields.TextItem;
 import com.smartgwt.client.widgets.layout.HLayout;
+import com.smartgwt.client.widgets.layout.Layout;
 import com.smartgwt.client.widgets.layout.VLayout;
 
-import de.eorganization.crawler.client.gui.MemberUpdatedHandler;
+import de.eorganization.crawler.client.gui.ImageUtil;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.services.CrawlerService;
 import de.eorganization.crawler.client.services.CrawlerServiceAsync;
@@ -31,8 +34,6 @@ import de.eorganization.crawler.client.services.CrawlerServiceAsync;
 public class RegisterWindow extends Window {
 
 	private Member member;
-
-	private MemberUpdatedHandler updatedHandler;
 
 	private DynamicForm form = new DynamicForm();
 
@@ -51,13 +52,12 @@ public class RegisterWindow extends Window {
 	/**
 	 * 
 	 */
-	public RegisterWindow(Member member, MemberUpdatedHandler handler) {
+	public RegisterWindow(Member member) {
 		this.member = member;
-		this.updatedHandler = handler;
-		createWindowLayout();
+		addItem(getWindowLayout());
 	}
 
-	private void createWindowLayout() {
+	public Layout getWindowLayout() {
 		setWidth(500);
 		setHeight("70%");
 		setTitle("Register");
@@ -72,11 +72,12 @@ public class RegisterWindow extends Window {
 			}
 		});
 
-		Img profileImg = new Img();
-		profileImg.setSrc(member.getProfilePic());
-		profileImg.setHeight(100);
-		profileImg.setMaxWidth(100);
-
+		Img profileImg = new Img(member.getProfilePic(), 100,
+				ImageUtil.getScaledImageHeight(member.getProfilePic(), 100));
+		profileImg.setImageType(ImageStyle.STRETCH);
+		
+		HeaderItem header = new HeaderItem();
+		header.setDefaultValue("Registration");
 		emailItem.setValue(member.getEmail());
 		emailItem.setRequired(true);
 		firstNameItem.setValue(member.getFirstname());
@@ -86,7 +87,7 @@ public class RegisterWindow extends Window {
 		AWSSecretItem.setValue(member.getAWSSecretKey());
 		AWSAccessItem.setValue(member.getAWSAccessKey());
 
-		form.setFields(emailItem, firstNameItem, lastNameItem, AWSSecretItem,
+		form.setFields(header, emailItem, firstNameItem, lastNameItem, AWSSecretItem,
 				AWSAccessItem);
 		form.setAutoFocus(true);
 
@@ -98,6 +99,7 @@ public class RegisterWindow extends Window {
 		cancelButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				destroy();
+				//com.google.gwt.user.client.Window.Location.assign(GWT.getHostPageBaseURL());
 			}
 		});
 		saveButton.addClickHandler(new ClickHandler() {
@@ -119,10 +121,10 @@ public class RegisterWindow extends Window {
 								@Override
 								public void onSuccess(Member result) {
 									if (member != null) {
-										updatedHandler.updated(result);
 										destroy();
 										com.google.gwt.user.client.Window.Location
-												.assign(GWT.getModuleBaseURL());
+												.assign(GWT
+														.getHostPageBaseURL());
 									} else
 										SC.warn("Email address already in use!");
 								}
@@ -146,7 +148,6 @@ public class RegisterWindow extends Window {
 		windowLayout.addMember(form);
 		windowLayout.addMember(buttons);
 
-		addItem(windowLayout);
-
+		return windowLayout;
 	}
 }

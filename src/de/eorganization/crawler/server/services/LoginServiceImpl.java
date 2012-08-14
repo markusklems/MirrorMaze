@@ -89,7 +89,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 			try {
 				String accessTokenString = cookies.get("oauth.accessToken");
 				String accessSecret = cookies.get("oauth.secret");
-				if (accessTokenString == null || accessSecret == null)
+				if (accessTokenString == null)
 					return loginInfo;
 
 				log.info("Retrieved access token " + accessTokenString);
@@ -145,9 +145,9 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 								.setNickname(googleUserInfo.getString("name"));
 						tempMember.setProfilePic(googleUserInfo
 								.getString("picture"));
-					}
+					} else
+						loginInfo.setLoggedIn(true);
 					loginInfo.setMember(tempMember);
-					loginInfo.setLoggedIn(true);
 
 				} else if (OAuth2Provider.TWITTER.equals(provider)) {
 					OAuthRequest req = new OAuthRequest(Verb.GET,
@@ -178,9 +178,10 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 								.getString("screen_name"));
 						tempMember.setProfilePic(twitterUserInfo
 								.getString("profile_image_url"));
-					}
+					} else
+						loginInfo.setLoggedIn(true);
 					loginInfo.setMember(tempMember);
-					loginInfo.setLoggedIn(true);
+
 				} else if (OAuth2Provider.FACEBOOK.equals(provider)) {
 					OAuthRequest req = new OAuthRequest(Verb.GET,
 							"https://graph.facebook.com/me");
@@ -209,13 +210,15 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 						tempMember.setNickname(facebookUserInfo
 								.getString("username"));
 						tempMember.setProfilePic("https://graph.facebook.com/"
-								+ facebookUserInfo.getString("username")
-								+ "/picture");
-					}
+								+ facebookUserInfo.getString("id")
+								+ "/picture?type=large");
+					} else
+						loginInfo.setLoggedIn(true);
 					loginInfo.setMember(tempMember);
-					loginInfo.setLoggedIn(true);
+
 				}
-				loginInfo.setLogoutUrl("/crawler/logout/oauth2");
+				loginInfo.setLogoutUrl("/logout/oauth");
+				log.info("Set loginInfo to " + loginInfo);
 				return loginInfo;
 			} catch (Exception e) {
 				log.log(Level.WARNING, e.getLocalizedMessage(), e);
@@ -232,7 +235,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 			} else {
 				loginInfo.setLoginUrl(userService.createLoginURL(requestUri));
 			}
-			log.info("logged in with google services " + loginInfo);
+			log.info("Logged in with google services " + loginInfo);
 		}
 
 		return loginInfo;

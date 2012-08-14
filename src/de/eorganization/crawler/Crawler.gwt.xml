@@ -13,8 +13,9 @@
 
 	<!-- Other module inherits -->
 	<inherits name="com.smartgwt.SmartGwt" />
+	<!-- <inherits name="com.smartclient.theme.simplicity.Simplicity" /> -->
 
-	<inherits name='com.google.gwt.http.HTTP' />
+	<inherits name="com.google.gwt.http.HTTP" />
 
 	<!-- Objectify -->
 	<inherits name="com.googlecode.objectify.Objectify" />

@@ -48,6 +48,12 @@ public class OAuth2LogoutServlet extends HttpServlet {
 		serviceCookie.setMaxAge(0);
 		serviceCookie.setPath("/");
 		resp.addCookie(serviceCookie);
+		
+		Cookie secretCookie = cookiesMap.get("oauth.secret") != null ? cookiesMap
+				.get("oauth.secret") : new Cookie("oauth.secret", "");
+		secretCookie.setMaxAge(0);
+		secretCookie.setPath("/");
+		resp.addCookie(secretCookie);
 
 		Cookie accessTokenCookie = cookiesMap.get("oauth.accessToken") != null ? cookiesMap
 				.get("oauth.accessToken") : new Cookie("oauth.accessToken", "");

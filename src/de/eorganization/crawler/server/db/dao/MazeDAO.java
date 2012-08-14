@@ -5,6 +5,7 @@ package de.eorganization.crawler.server.db.dao;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.googlecode.objectify.Key;
@@ -238,9 +239,13 @@ public class MazeDAO extends DAOBase {
 	}
 
 	public Member registerMember(Member member) {
-		Key<Member> key = ofy().put(member);
-		if (key != null)
-			return ofy().get(key);
+		try {
+			Key<Member> key = ofy().put(member);
+			if (key != null)
+				return ofy().get(key);
+		} catch (Exception e) {
+			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
 		return null;
 	}
 }

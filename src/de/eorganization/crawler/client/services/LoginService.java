@@ -6,7 +6,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 import de.eorganization.crawler.client.model.LoginInfo;
 
 
-@RemoteServiceRelativePath("login")
+@RemoteServiceRelativePath("loginService")
 public interface LoginService extends RemoteService {
 
 	public LoginInfo login(String requestUri);

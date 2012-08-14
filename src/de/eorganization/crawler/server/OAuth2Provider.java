@@ -21,13 +21,13 @@ public enum OAuth2Provider {
 	GOOGLE("Google", "468842765661.apps.googleusercontent.com",
 			"3E6clkyZOMil4w4WkOqPe4A8",
 			"https://www.googleapis.com/auth/userinfo.profile",
-			"http://crawlerride.appspot.com/crawler/login/oauth2callback",
+			"http://crawlerride.appspot.com/login/oauthcallback",
 			new GoogleApi20()), TWITTER("Twitter", "Kbp5FxjWtTBzsAxcBLRdyg",
 			"1TBvJJuaFzOodHalzk9JQ6Y5mwcc2ybvNCALWQJKMww", null,
-			"http://crawlerride.appspot.com/crawler/login/oauth2callback",
+			"http://crawlerride.appspot.com/login/oauthcallback",
 			new TwitterApi()), FACEBOOK("Facebook", "245033985617800",
-			"3c682b41d1d072386d056eda7890e2e8", null,
-			"http://crawlerride.appspot.com/crawler/login/oauth2callback",
+			"3c682b41d1d072386d056eda7890e2e8", "email",
+			"http://crawlerride.appspot.com/login/oauthcallback",
 			new FacebookApi());
 
 	private String name;
