@@ -74,12 +74,11 @@ public class AMICreateSearchIndexServlet extends HttpServlet {
 				resp.getWriter().println(
 						"crawling repo " + repo.getRegionName() + " at "
 								+ repo.getEndpoint());
-				DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest();
 				DescribeImagesResult result = ec2
-						.describeImages(describeImagesRequest);
+						.describeImages(new DescribeImagesRequest());
 				for (Image img : result.getImages()) {
 					if (repo.getEndpoint() != null && img.getImageId() != null)
-						idx.add(Document
+						idx.addAsync(Document
 								.newBuilder()
 								.setId(repo.getEndpoint() + "+"
 										+ img.getImageId())

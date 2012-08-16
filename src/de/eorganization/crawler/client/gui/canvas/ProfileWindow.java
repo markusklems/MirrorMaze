@@ -61,12 +61,16 @@ public class ProfileWindow extends Window {
 
 	private void createWindowLayout() {
 		setWidth(500);
-		setHeight("70%");
+		setHeight(500);
 		setTitle("Profile");
 		setShowMinimizeButton(false);
 		setIsModal(true);
 		setShowModalMask(true);
-		centerInPage();
+		setAutoCenter(true);
+		setDismissOnOutsideClick(true);
+		setShowShadow(true);
+		setShadowOffset(0);
+		setShadowSoftness(10);
 
 		addCloseClickHandler(new CloseClickHandler() {
 			public void onCloseClick(CloseClickEvent event) {

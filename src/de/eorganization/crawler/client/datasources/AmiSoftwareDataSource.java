@@ -17,15 +17,15 @@ import de.eorganization.crawler.client.model.Software;
 import de.eorganization.crawler.client.services.CrawlerService;
 import de.eorganization.crawler.client.services.CrawlerServiceAsync;
 
-
 public class AmiSoftwareDataSource extends GwtRpcDataSource {
-	
-	private Logger log = Logger.getLogger(AmiSoftwareDataSource.class.getName());
+
+	private Logger log = Logger
+			.getLogger(AmiSoftwareDataSource.class.getName());
 
 	private String memberId;
-	
+
 	private Long amiId;
-	
+
 	/**
 	 * @param region
 	 */
@@ -64,9 +64,10 @@ public class AmiSoftwareDataSource extends GwtRpcDataSource {
 				: 0;
 
 		Map<String, Object> criteria = new HashMap<String, Object>();
-		for (String attribute : request.getCriteria().getAttributes())
-			criteria.put(attribute,
-					request.getCriteria().getValues().get(attribute));
+		if (request.getCriteria() != null)
+			for (String attribute : request.getCriteria().getAttributes())
+				criteria.put(attribute,
+						request.getCriteria().getValues().get(attribute));
 
 		mirrorMazeService.getAmiSoftware(memberId, amiId, criteria, start, end,
 				new AsyncCallback<ListResponse<Software>>() {
@@ -75,13 +76,15 @@ public class AmiSoftwareDataSource extends GwtRpcDataSource {
 					public void onSuccess(ListResponse<Software> result) {
 						log.info("got result for ami data source " + result);
 						response.setData(createListGridRecords(result.getList()));
-						response.setTotalRows(new Long(result.getTotalRecords()).intValue());
+						response.setTotalRows(new Long(result.getTotalRecords())
+								.intValue());
 						processResponse(requestId, response);
 					}
 
 					@Override
 					public void onFailure(Throwable caught) {
-						log.log(Level.WARNING, caught.getLocalizedMessage(), caught);
+						log.log(Level.WARNING, caught.getLocalizedMessage(),
+								caught);
 					}
 				});
 	}

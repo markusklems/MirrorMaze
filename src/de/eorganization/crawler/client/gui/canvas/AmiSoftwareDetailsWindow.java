@@ -58,7 +58,7 @@ public class AmiSoftwareDetailsWindow extends Window {
 		softwareGrid.setAutoFetchData(true);
 		softwareGrid
 				.setRecordComponentPoolingMode(RecordComponentPoolingMode.RECYCLE);
-		softwareGrid.setDataPageSize(20);
+		softwareGrid.setDataPageSize(10);
 
 		VLayout windowLayout = new VLayout();
 		windowLayout.setMargin(10);

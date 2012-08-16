@@ -59,12 +59,16 @@ public class RegisterWindow extends Window {
 
 	public Layout getWindowLayout() {
 		setWidth(500);
-		setHeight("70%");
+		setHeight(500);
 		setTitle("Register");
 		setShowMinimizeButton(false);
 		setIsModal(true);
 		setShowModalMask(true);
-		centerInPage();
+		setAutoCenter(true);
+		setDismissOnOutsideClick(true);
+		setShowShadow(true);
+		setShadowOffset(0);
+		setShadowSoftness(10);
 
 		addCloseClickHandler(new CloseClickHandler() {
 			public void onCloseClick(CloseClickEvent event) {
@@ -75,7 +79,7 @@ public class RegisterWindow extends Window {
 		Img profileImg = new Img(member.getProfilePic(), 100,
 				ImageUtil.getScaledImageHeight(member.getProfilePic(), 100));
 		profileImg.setImageType(ImageStyle.STRETCH);
-		
+
 		HeaderItem header = new HeaderItem();
 		header.setDefaultValue("Registration");
 		emailItem.setValue(member.getEmail());
@@ -87,8 +91,8 @@ public class RegisterWindow extends Window {
 		AWSSecretItem.setValue(member.getAWSSecretKey());
 		AWSAccessItem.setValue(member.getAWSAccessKey());
 
-		form.setFields(header, emailItem, firstNameItem, lastNameItem, AWSSecretItem,
-				AWSAccessItem);
+		form.setFields(header, emailItem, firstNameItem, lastNameItem,
+				AWSSecretItem, AWSAccessItem);
 		form.setAutoFocus(true);
 
 		HLayout buttons = new HLayout();
@@ -99,7 +103,7 @@ public class RegisterWindow extends Window {
 		cancelButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				destroy();
-				//com.google.gwt.user.client.Window.Location.assign(GWT.getHostPageBaseURL());
+				// com.google.gwt.user.client.Window.Location.assign(GWT.getHostPageBaseURL());
 			}
 		});
 		saveButton.addClickHandler(new ClickHandler() {

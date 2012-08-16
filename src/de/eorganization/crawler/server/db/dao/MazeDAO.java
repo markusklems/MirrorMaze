@@ -3,17 +3,26 @@
  */
 package de.eorganization.crawler.server.db.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.appengine.api.search.Index;
+import com.google.appengine.api.search.IndexSpec;
+import com.google.appengine.api.search.QueryOptions;
+import com.google.appengine.api.search.QueryOptions.Builder;
+import com.google.appengine.api.search.ScoredDocument;
+import com.google.appengine.api.search.SearchService;
+import com.google.appengine.api.search.SearchServiceFactory;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyOpts;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.Query;
 import com.googlecode.objectify.util.DAOBase;
 
+import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
 import de.eorganization.crawler.client.model.Ami;
 import de.eorganization.crawler.client.model.Language;
 import de.eorganization.crawler.client.model.Member;
@@ -247,5 +256,37 @@ public class MazeDAO extends DAOBase {
 			log.log(Level.WARNING, e.getLocalizedMessage(), e);
 		}
 		return null;
+	}
+
+	public ListResponse<Ami> findAmis(String memberId, String query, String region,
+			int limit) {
+		List<Ami> amis = new ArrayList<Ami>();
+
+		try {
+			log.info("searching for amis with query " + query + " in region "
+					+ region);
+			SearchService ss = SearchServiceFactory.getSearchService();
+			Index idx = ss.getIndex(IndexSpec.newBuilder().setName("amiIndex")
+					.build());
+			Builder queryOptionsBuilder = QueryOptions.newBuilder();
+			if (limit > -1)
+				queryOptionsBuilder.setLimit(10);
+
+			List<ScoredDocument> results = new ArrayList<ScoredDocument>(idx
+					.search(com.google.appengine.api.search.Query
+							.newBuilder()
+							.setOptions(queryOptionsBuilder.build())
+							.build((isAmiAllOrRegion(region) ? ""
+									: "repository:" + region + " ") + query))
+					.getResults());
+
+			for (ScoredDocument sd : results)
+				amis.add(ofy().query(Ami.class)
+						.filter("repository", sd.getId().split("\\+")[0])
+						.filter("imageId", sd.getId().split("\\+")[1]).get());
+		} catch (Exception e) {
+			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+		}
+		return new ListResponse<Ami>(amis.size(), amis);
 	}
 }

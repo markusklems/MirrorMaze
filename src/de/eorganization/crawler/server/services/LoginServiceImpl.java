@@ -73,10 +73,13 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 
 	private Logger log = Logger.getLogger(LoginServiceImpl.class.getName());
 
+	private UserService userService = UserServiceFactory.getUserService();
+
 	@Override
 	public LoginInfo login(String requestUri) {
 		LoginInfo loginInfo = new LoginInfo();
 		loginInfo.setLoggedIn(false);
+		loginInfo.setLoginUrl(userService.createLoginURL(requestUri));
 
 		Map<String, String> cookies = CookiesUtil
 				.getCookiesStringMap(getThreadLocalRequest().getCookies());
@@ -133,6 +136,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 					Member tempMember = AmiManager
 							.findMemberBySocialId(googleUserInfo
 									.getString("id"));
+
 					if (tempMember == null) {
 						tempMember = new Member();
 
@@ -145,8 +149,39 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 								.setNickname(googleUserInfo.getString("name"));
 						tempMember.setProfilePic(googleUserInfo
 								.getString("picture"));
+
+						req = new OAuthRequest(Verb.GET,
+								"https://www.googleapis.com/plus/v1/people/me");
+						service.signRequest(accessToken, req);
+						response = req.send();
+						log.info("Requested more user info from google: "
+								+ response.getBody());
+
+						JSONObject googleUserInfo2 = new JSONObject(
+								response.getBody());
+						log.info("got user info: "
+								+ googleUserInfo2.getString("nickname") + ", "
+								+ googleUserInfo2.getString("displayName"));
+						if (googleUserInfo2 != null
+								&& googleUserInfo2.getJSONArray("emails") != null)
+							for (int i = 0; i < googleUserInfo2.getJSONArray(
+									"emails").length(); i++) {
+								JSONObject emailInfo = googleUserInfo2
+										.getJSONArray("emails")
+										.optJSONObject(i);
+								if (emailInfo != null
+										&& emailInfo.getBoolean("primary")) {
+									tempMember.setEmail(emailInfo
+											.getString("value"));
+									tempMember = AmiManager
+											.registerMember(tempMember);
+									loginInfo.setLoggedIn(true);
+									break;
+								}
+							}
 					} else
 						loginInfo.setLoggedIn(true);
+
 					loginInfo.setMember(tempMember);
 
 				} else if (OAuth2Provider.TWITTER.equals(provider)) {
@@ -202,7 +237,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 					if (tempMember == null) {
 						tempMember = new Member();
 						tempMember.setSocialId(new Integer(facebookUserInfo
-								.getInt("id")).toString());
+								.getString("id")).toString());
 						tempMember.setFirstname(facebookUserInfo
 								.getString("first_name"));
 						tempMember.setLastname(facebookUserInfo
@@ -212,10 +247,13 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 						tempMember.setProfilePic("https://graph.facebook.com/"
 								+ facebookUserInfo.getString("id")
 								+ "/picture?type=large");
-					} else
-						loginInfo.setLoggedIn(true);
-					loginInfo.setMember(tempMember);
+						tempMember
+								.setEmail(facebookUserInfo.getString("email"));
+						tempMember = AmiManager.registerMember(tempMember);
+					}
 
+					loginInfo.setLoggedIn(true);
+					loginInfo.setMember(tempMember);
 				}
 				loginInfo.setLogoutUrl("/logout/oauth");
 				log.info("Set loginInfo to " + loginInfo);
@@ -225,15 +263,12 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 			}
 		} else {
 
-			UserService userService = UserServiceFactory.getUserService();
 			User user = userService.getCurrentUser();
 
 			if (userService.isUserLoggedIn() && user != null) {
 				loginInfo.setLoggedIn(true);
 				loginInfo.setMember(AmiManager.saveOrGetMember(user));
 				loginInfo.setLogoutUrl(userService.createLogoutURL(requestUri));
-			} else {
-				loginInfo.setLoginUrl(userService.createLoginURL(requestUri));
 			}
 			log.info("Logged in with google services " + loginInfo);
 		}

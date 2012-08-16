@@ -159,26 +159,16 @@ public class AmiManager {
 		String query = (String) criteria.get("query");
 		if (query == null)
 			return getAmis(memberId, region, startRow, endRow);
-		return findAmis(query, region);
+		return findAmis(memberId, query, region);
 	}
 
-	public static ListResponse<Ami> findAmis(String query, String region) {
-		List<Ami> amis = new ArrayList<Ami>();
+	public static ListResponse<Ami> findAmis(String memberId, String query,
+			String region) {
+		int limit = -1;
+		if (!UserRole.ADMIN.equals(getMember(memberId).getRole()))
+			limit = 10;
 
-		try {
-			log.info("searching for amis with query " + query);
-			SearchService ss = SearchServiceFactory.getSearchService();
-			Index idx = ss.getIndex(IndexSpec.newBuilder().setName("amiIndex")
-					.build());
-			Results<ScoredDocument> results = idx.search(Query.newBuilder()
-					.build(query));
-			for (ScoredDocument sd : results.getResults())
-				amis.add(dao.ofy().get(Ami.class, new Long(sd.getId())));
-		} catch (Exception e) {
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
-		}
-		return new ListResponse<Ami>(amis.size(), amis);
-
+		return dao.findAmis(memberId, query, region, limit);
 	}
 
 	public static ListResponse<Ami> getAmis(String memberId, String region,

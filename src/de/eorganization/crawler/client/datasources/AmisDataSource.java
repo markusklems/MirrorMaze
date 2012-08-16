@@ -1,6 +1,5 @@
 package de.eorganization.crawler.client.datasources;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -18,19 +17,21 @@ import de.eorganization.crawler.client.model.Ami;
 import de.eorganization.crawler.client.services.CrawlerService;
 import de.eorganization.crawler.client.services.CrawlerServiceAsync;
 
-
 public class AmisDataSource extends GwtRpcDataSource {
-	
+
 	private Logger log = Logger.getLogger(AmisDataSource.class.getName());
 
 	private String memberId;
-	
+
+	private Map<String, Object> criteria;
+
 	/**
 	 * @param region
 	 */
-	public AmisDataSource(String memberId) {
+	public AmisDataSource(String memberId, Map<String, Object> criteria) {
 		super();
 		this.memberId = memberId;
+		this.criteria = criteria;
 	}
 
 	public ListGridRecord[] createListGridRecords(List<Ami> amis) {
@@ -76,11 +77,6 @@ public class AmisDataSource extends GwtRpcDataSource {
 		int end = request.getEndRow() != null ? request.getEndRow().intValue()
 				: 0;
 
-		Map<String, Object> criteria = new HashMap<String, Object>();
-		for (String attribute : request.getCriteria().getAttributes())
-			criteria.put(attribute,
-					request.getCriteria().getValues().get(attribute));
-
 		mirrorMazeService.getAmis(memberId, criteria, start, end,
 				new AsyncCallback<ListResponse<Ami>>() {
 
@@ -88,13 +84,15 @@ public class AmisDataSource extends GwtRpcDataSource {
 					public void onSuccess(ListResponse<Ami> result) {
 						log.info("got result for ami data source " + result);
 						response.setData(createListGridRecords(result.getList()));
-						response.setTotalRows(new Long(result.getTotalRecords()).intValue());
+						response.setTotalRows(new Long(result.getTotalRecords())
+								.intValue());
 						processResponse(requestId, response);
 					}
 
 					@Override
 					public void onFailure(Throwable caught) {
-						log.log(Level.WARNING, caught.getLocalizedMessage(), caught);
+						log.log(Level.WARNING, caught.getLocalizedMessage(),
+								caught);
 					}
 				});
 	}
@@ -118,6 +116,17 @@ public class AmisDataSource extends GwtRpcDataSource {
 			DSResponse response) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public void setMemberId(String memberId) {
+		this.memberId = memberId;
+	}
+
+	/**
+	 * @return the criteria
+	 */
+	public Map<String, Object> getCriteria() {
+		return criteria;
 	}
 
 }

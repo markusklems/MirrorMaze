@@ -20,7 +20,7 @@ public enum OAuth2Provider {
 
 	GOOGLE("Google", "468842765661.apps.googleusercontent.com",
 			"3E6clkyZOMil4w4WkOqPe4A8",
-			"https://www.googleapis.com/auth/userinfo.profile",
+			"https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/plus.me",
 			"http://crawlerride.appspot.com/login/oauthcallback",
 			new GoogleApi20()), TWITTER("Twitter", "Kbp5FxjWtTBzsAxcBLRdyg",
 			"1TBvJJuaFzOodHalzk9JQ6Y5mwcc2ybvNCALWQJKMww", null,

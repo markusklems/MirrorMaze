@@ -6,7 +6,6 @@ package de.eorganization.crawler.client.gui.canvas;
 import com.google.gwt.core.client.GWT;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.VisibilityMode;
-import com.smartgwt.client.widgets.Img;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.Window;
 import com.smartgwt.client.widgets.events.ClickEvent;
@@ -47,13 +46,14 @@ public class LoginWindow extends Window {
 		setTitle("Login required");
 		setWidth(700);
 		setHeight(500);
-		centerInPage();
-
+		setAutoCenter(true);
 		setShowMinimizeButton(false);
 		setIsModal(true);
 		setShowModalMask(true);
-		centerInPage();
 		setDismissOnOutsideClick(true);
+		setShowShadow(true);
+		setShadowOffset(0);
+		setShadowSoftness(10);
 
 		addCloseClickHandler(new CloseClickHandler() {
 			public void onCloseClick(CloseClickEvent event) {

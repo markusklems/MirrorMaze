@@ -10,7 +10,6 @@ import java.util.Set;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.Record;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.RecordComponentPoolingMode;
@@ -26,7 +25,6 @@ import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.tab.Tab;
 
-import de.eorganization.crawler.client.Crawler.Repository;
 import de.eorganization.crawler.client.datasources.AmisDataSource;
 import de.eorganization.crawler.client.gui.canvas.AmiSoftwareDetailsWindow;
 import de.eorganization.crawler.client.model.LoginInfo;
@@ -43,6 +41,11 @@ public class AmisTab extends Tab {
 
 	private Label amiNumber = new Label("0");
 
+	private LoginInfo loginInfo;
+
+	private AmisDataSource amisDataSource = new AmisDataSource(null,
+			new HashMap<String, Object>());
+
 	/**
 	 * 
 	 */
@@ -50,6 +53,9 @@ public class AmisTab extends Tab {
 
 		if (loginInfo == null)
 			return;
+
+		this.loginInfo = loginInfo;
+		this.amisDataSource.setMemberId(getMemberId());
 
 		setTitle("AMI List");
 		setIcon("[SKINIMG]DatabaseBrowser/data.png");
@@ -97,11 +103,7 @@ public class AmisTab extends Tab {
 		// amis.setShowGridSummary(true);
 		// amis.setShowGroupSummary(true);
 
-		getAmis().setDataSource(
-				new AmisDataSource(loginInfo.getMember() != null ? loginInfo
-						.getMember().getEmail() : null));
-		getAmis()
-				.setCriteria(new Criteria("region", Repository.EU_1.getName()));
+		getAmis().setDataSource(amisDataSource);
 		getAmis().setAutoFetchData(true);
 		getAmis().setRecordComponentPoolingMode(
 				RecordComponentPoolingMode.RECYCLE);
@@ -168,26 +170,36 @@ public class AmisTab extends Tab {
 	}
 
 	public void refresh() {
-		getAmis().fetchData(getAmis().getCriteria());
-
-		Map<String, Object> criteria = new HashMap<String, Object>();
-		for (String attribute : getAmis().getCriteria().getAttributes())
-			criteria.put(attribute,
-					getAmis().getCriteria().getValues().get(attribute));
+		getAmis().invalidateCache();
+		if (getAmis().willFetchData(getAmis().getCriteria()))
+			getAmis().fetchData();
 
 		CrawlerServiceAsync crawlerService = GWT.create(CrawlerService.class);
-		crawlerService.getNumberAllAmis(criteria, new AsyncCallback<Long>() {
+		crawlerService.getNumberAllAmis(getCriteria(),
+				new AsyncCallback<Long>() {
 
-			@Override
-			public void onFailure(Throwable caught) {
+					@Override
+					public void onFailure(Throwable caught) {
 
-			}
+					}
 
-			@Override
-			public void onSuccess(Long result) {
-				if (result != null)
-					getAmiNumber().setContents(" " + result.toString());
-			}
-		});
+					@Override
+					public void onSuccess(Long result) {
+						if (result != null)
+							getAmiNumber().setContents(" " + result.toString());
+					}
+				});
+	}
+
+	private String getMemberId() {
+		return loginInfo.getMember() != null ? loginInfo.getMember().getEmail()
+				: null;
+	}
+
+	/**
+	 * @return the criteria
+	 */
+	public Map<String, Object> getCriteria() {
+		return amisDataSource.getCriteria();
 	}
 }

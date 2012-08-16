@@ -15,6 +15,7 @@ import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
+import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.util.BooleanCallback;
@@ -155,7 +156,7 @@ public class Crawler implements EntryPoint {
 		welcomeInfo.setBackgroundColor("#ffffff");
 
 		Label welcomeLabel = new Label(
-				"<h1 style=\"font-size: 40pt\">Welcome!</h1><p style=\"font-size: 20pt\"><span style=\"font-weight: bolder;\">The Crawler</span> <span style=\"font-style: italic; font-weight: bolder;\">n.</span> is an enhanced, continuously growing database of Amazon Machine Images (AMI). By permanently crawling public AMIs from the Amazon EC2 service, the Crawler collects information about the contents of AMIs, i.e., software libraries and versions. The large database supports DevOps, Cloud Developers and Cloud users with insights to compare and understand AMIs better. A search engine allows to find AMIs with a configuration that meets standards and requirements.</p><p style=\"font-size: 20pt\">Feel free to play with the Crawler or <a href=\"http://myownthemepark.com/prices-table/\">contact us for a premium account</a>. Simply sign in with a social user account (Facebook, Twitter, Google+).</p>");
+				"<h1 style=\"font-size: 40pt\">Welcome!</h1><p style=\"font-size: 20pt\"><span style=\"font-weight: bolder;\">The Crawler</span> <span style=\"font-style: italic; font-weight: bolder;\">n.</span> is an enhanced, continuously growing database of Amazon Machine Images (AMI). By permanently crawling public AMIs from the Amazon EC2 service, the Crawler collects information about the contents of AMIs, i.e., software libraries and versions. The large database supports DevOps, Cloud Developers and Cloud users with insights to compare and understand AMIs better. A search engine allows to find AMIs with a configuration that meets standards and requirements.</p><p style=\"font-size: 20pt\">Feel free to ride the Crawler and <a href=\"http://myownthemepark.com/prices-table/\">contact us for a premium account</a>. Simply sign in with a social user account (Facebook, Twitter, Google+).</p>");
 		welcomeLabel.setWidth(600);
 		welcomeLabel.setStyleName("welcome");
 
@@ -205,16 +206,15 @@ public class Crawler implements EntryPoint {
 		DynamicForm searchForm = new DynamicForm();
 		searchForm.setAutoWidth();
 		final TextItem searchQuery = new TextItem("Search");
+		searchQuery.setWidth(300);
 		searchQuery.setWrapTitle(false);
 		searchQuery.addKeyPressHandler(new KeyPressHandler() {
 
 			@Override
 			public void onKeyPress(KeyPressEvent event) {
 				if ("Enter".equals(event.getKeyName())) {
-					amisTab.getAmis()
-							.getCriteria()
-							.setAttribute("query",
-									searchQuery.getValueAsString());
+					amisTab.getCriteria().put("query",
+							searchQuery.getValueAsString());
 					refresh();
 				}
 
@@ -237,14 +237,12 @@ public class Crawler implements EntryPoint {
 			@Override
 			public void onChanged(ChangedEvent event) {
 				try {
-					amisTab.getAmis()
-							.getCriteria()
-							.setAttribute(
-									"region",
-									Repository.valueOf(
-											(String) regionFilter
-													.getDisplayValue())
-											.getName());
+
+					amisTab.getCriteria().put(
+							"region",
+							Repository.valueOf(
+									(String) regionFilter.getDisplayValue())
+									.getName());
 					refresh();
 				} catch (Exception e) {
 				}
@@ -256,14 +254,13 @@ public class Crawler implements EntryPoint {
 			public void onKeyPress(KeyPressEvent event) {
 				try {
 					if (event.getKeyName().equals("Enter"))
-						amisTab.getAmis()
-								.getCriteria()
-								.setAttribute(
-										"region",
-										Repository.valueOf(
+						amisTab.getCriteria().put(
+								"region",
+								Repository
+										.valueOf(
 												(String) regionFilter
 														.getDisplayValue())
-												.getName());
+										.getName());
 
 					refresh();
 				} catch (Exception e) {
@@ -275,8 +272,8 @@ public class Crawler implements EntryPoint {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				amisTab.getAmis().getCriteria()
-						.setAttribute("query", searchQuery.getValueAsString());
+				amisTab.getCriteria().put("query",
+						searchQuery.getValueAsString());
 				refresh();
 			}
 		});
