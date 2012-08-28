@@ -36,6 +36,8 @@ public class Member implements Serializable {
 	private String AWSSecretKey;
 
 	private String AWSAccessKey;
+	
+	private boolean showWelcomeInfo = true;
 
 	/**
 	 * 
@@ -198,6 +200,20 @@ public class Member implements Serializable {
 	 */
 	public void setProfilePic(String profilePic) {
 		this.profilePic = profilePic;
+	}
+
+	/**
+	 * @return the showWelcomeInfo
+	 */
+	public boolean isShowWelcomeInfo() {
+		return showWelcomeInfo;
+	}
+
+	/**
+	 * @param showWelcomeInfo the showWelcomeInfo to set
+	 */
+	public void setShowWelcomeInfo(boolean showWelcomeInfo) {
+		this.showWelcomeInfo = showWelcomeInfo;
 	}
 
 	/*

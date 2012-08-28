@@ -15,7 +15,6 @@ import com.google.gwt.visualization.client.DataTable;
 import com.google.gwt.visualization.client.VisualizationUtils;
 import com.google.gwt.visualization.client.visualizations.corechart.Options;
 import com.google.gwt.visualization.client.visualizations.corechart.PieChart;
-import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.types.Alignment;
 import com.smartgwt.client.types.VerticalAlignment;
 import com.smartgwt.client.util.BooleanCallback;
@@ -40,9 +39,12 @@ import com.smartgwt.client.widgets.tab.events.TabSelectedEvent;
 import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
 
 import de.eorganization.crawler.client.gui.AmisTab;
+import de.eorganization.crawler.client.gui.IntrospectionTab;
+import de.eorganization.crawler.client.gui.MemberUpdatedHandler;
 import de.eorganization.crawler.client.gui.TopLayout;
 import de.eorganization.crawler.client.gui.canvas.LoginWindow;
 import de.eorganization.crawler.client.gui.canvas.RegisterWindow;
+import de.eorganization.crawler.client.gui.canvas.WelcomeInfoWindow;
 import de.eorganization.crawler.client.model.LoginInfo;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.model.UserRole;
@@ -136,8 +138,19 @@ public class Crawler implements EntryPoint {
 							if (getMember() != null) {
 								new RegisterWindow(getMember()).show();
 							}
-						} else
+						} else {
 							createMasterLayout();
+							if (getMember() != null
+									&& getMember().isShowWelcomeInfo())
+								new WelcomeInfoWindow(getMember(),
+										new MemberUpdatedHandler() {
+
+											@Override
+											public void updated(Member member) {
+												loginInfo.setMember(member);
+											}
+										}).show();
+						}
 
 					}
 				});
@@ -293,7 +306,7 @@ public class Crawler implements EntryPoint {
 
 		tabs.addTab(amisTab);
 		tabs.addTab(new Tab("Compare AMIs", "[SKINIMG]actions/view.png"));
-		tabs.addTab(new Tab("Scan AMI", "[SKINIMG]actions/search.png"));
+		tabs.addTab(new IntrospectionTab());
 		tabs.addTab(createStatisticsTab());
 		if (getMember() != null && UserRole.ADMIN.equals(getMember().getRole()))
 			tabs.addTab(createAdminTab());

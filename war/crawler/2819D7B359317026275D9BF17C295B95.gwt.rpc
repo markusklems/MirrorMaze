@@ -2,7 +2,7 @@ com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException, true, true, t
 com.google.gwt.user.client.rpc.RpcTokenException, true, true, false, false, com.google.gwt.user.client.rpc.RpcTokenException/2345075298, 2345075298
 com.google.gwt.user.client.rpc.XsrfToken, false, false, true, true, com.google.gwt.user.client.rpc.XsrfToken/4254043109, 4254043109
 de.eorganization.crawler.client.model.LoginInfo, true, true, false, false, de.eorganization.crawler.client.model.LoginInfo/2330426707, 2330426707
-de.eorganization.crawler.client.model.Member, true, true, false, false, de.eorganization.crawler.client.model.Member/2778724778, 2778724778
+de.eorganization.crawler.client.model.Member, true, true, false, false, de.eorganization.crawler.client.model.Member/640393658, 640393658
 de.eorganization.crawler.client.model.UserRole, true, true, false, false, de.eorganization.crawler.client.model.UserRole/3157516295, 3157516295
 de.eorganization.crawler.client.services.LoginService, false, false, false, false, _, 2245483942
 java.lang.Exception, true, false, true, false, java.lang.Exception/1920171873, 1920171873
