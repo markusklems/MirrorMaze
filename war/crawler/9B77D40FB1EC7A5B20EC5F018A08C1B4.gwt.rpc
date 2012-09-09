@@ -29,6 +29,7 @@ java.lang.Long, true, true, true, true, java.lang.Long/4227064769, 4227064769
 java.lang.Number, true, false, true, false, java.lang.Number/300033342, 300033342
 java.lang.RuntimeException, true, false, true, false, java.lang.RuntimeException/515124647, 515124647
 java.lang.String, true, true, true, true, java.lang.String/2004016611, 2004016611
+[Ljava.lang.String;, true, true, false, false, [Ljava.lang.String;/2600011424, 2600011424
 java.lang.Throwable, true, false, true, false, java.lang.Throwable/2953622131, 2953622131
 java.util.ArrayList, true, true, false, false, java.util.ArrayList/4159755760, 4159755760
 java.util.Arrays$ArrayList, true, true, false, false, java.util.Arrays$ArrayList/2507071751, 2507071751

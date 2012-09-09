@@ -1,5 +1,6 @@
 package de.eorganization.crawler.server.services;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -83,4 +84,15 @@ public class CrawlerServiceImpl extends RemoteServiceServlet implements
 	public Member registerMember(Member member) {
 		return AmiManager.registerMember(member);
 	}
+
+	@Override
+	public List<String> getSoftwareNames() {
+		return AmiManager.getSoftwareNames();
+	}
+
+	@Override
+	public void updateSoftwareNames() {
+		AmiManager.updateSoftwareNames();
+	}
+
 }

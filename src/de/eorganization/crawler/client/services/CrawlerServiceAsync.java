@@ -1,5 +1,6 @@
 package de.eorganization.crawler.client.services;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -42,5 +43,9 @@ public interface CrawlerServiceAsync {
 			AsyncCallback<ListResponse<Software>> callback);
 
 	void registerMember(Member member, AsyncCallback<Member> callback);
+
+	void getSoftwareNames(AsyncCallback<List<String>> callback);
+
+	void updateSoftwareNames(AsyncCallback<Void> callback);
 
 }

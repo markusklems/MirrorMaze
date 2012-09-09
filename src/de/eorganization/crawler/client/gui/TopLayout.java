@@ -16,6 +16,7 @@ import com.smartgwt.client.widgets.layout.HLayout;
 
 import de.eorganization.crawler.client.gui.canvas.LoginWindow;
 import de.eorganization.crawler.client.gui.canvas.ProfileWindow;
+import de.eorganization.crawler.client.gui.handler.MemberUpdatedHandler;
 import de.eorganization.crawler.client.model.LoginInfo;
 import de.eorganization.crawler.client.model.Member;
 

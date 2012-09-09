@@ -2,7 +2,9 @@ package de.eorganization.crawler.server.servlets;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -21,7 +23,6 @@ import com.google.gwt.user.client.ui.FileUpload;
 import de.eorganization.crawler.client.model.Language;
 import de.eorganization.crawler.client.model.Software;
 import de.eorganization.crawler.server.AmiManager;
-
 
 /**
  * @author mugglmenzel
@@ -140,16 +141,21 @@ public class JSONImportServlet extends HttpServlet {
 									.getString("version"), softAttributes);
 					if (soft != null) {
 						log.fine("Saved/restored software " + soft);
-						soft.getAttributes().putAll(softAttributes);
-						AmiManager.updateSoftware(soft);
-						log.fine("Saved object " + soft);
+						// soft.getAttributes().putAll(softAttributes);
+						// AmiManager.updateSoftware(soft);
+						// log.fine("Saved object " + soft);
 					} else
 						log.severe("Not able to save software information for given Ami Id "
 								+ amiId + "!");
 
 				}
+				List<String> names = new ArrayList<String>();
+				for (int i = 0; i < softwareNames.length(); i++)
+					names.add(softwareNames.getString(i));
+				AmiManager.updateSoftwareNames(names);
 				log.info("Saved " + softwareNames.length()
 						+ " software objects");
+
 			}
 
 			JSONObject languages = json.optJSONObject("languages");

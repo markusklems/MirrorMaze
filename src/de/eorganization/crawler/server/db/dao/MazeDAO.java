@@ -4,8 +4,12 @@
 package de.eorganization.crawler.server.db.dao;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,6 +31,7 @@ import de.eorganization.crawler.client.model.Ami;
 import de.eorganization.crawler.client.model.Language;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.model.Software;
+import de.eorganization.crawler.client.model.SoftwareName;
 
 /**
  * @author mugglmenzel
@@ -37,6 +42,7 @@ public class MazeDAO extends DAOBase {
 		ObjectifyService.register(Ami.class);
 		ObjectifyService.register(Language.class);
 		ObjectifyService.register(Software.class);
+		ObjectifyService.register(SoftwareName.class);
 		ObjectifyService.register(Member.class);
 	}
 
@@ -258,10 +264,10 @@ public class MazeDAO extends DAOBase {
 		return null;
 	}
 
-	public ListResponse<Ami> findAmis(String memberId, String query, String region,
-			int limit) {
+	public ListResponse<Ami> findAmis(String memberId, String query,
+			String region, int limit, int startRow, int endRow) {
 		List<Ami> amis = new ArrayList<Ami>();
-
+		List<ScoredDocument> results = new ArrayList<ScoredDocument>();
 		try {
 			log.info("searching for amis with query " + query + " in region "
 					+ region);
@@ -272,21 +278,77 @@ public class MazeDAO extends DAOBase {
 			if (limit > -1)
 				queryOptionsBuilder.setLimit(10);
 
-			List<ScoredDocument> results = new ArrayList<ScoredDocument>(idx
-					.search(com.google.appengine.api.search.Query
+			results.addAll(idx.search(
+					com.google.appengine.api.search.Query
 							.newBuilder()
 							.setOptions(queryOptionsBuilder.build())
 							.build((isAmiAllOrRegion(region) ? ""
 									: "repository:" + region + " ") + query))
 					.getResults());
 
-			for (ScoredDocument sd : results)
+			startRow = startRow < results.size() ? startRow : results.size();
+			endRow = endRow < results.size() ? endRow : results.size();
+			List<ScoredDocument> resultsSub = results.subList(startRow, endRow);
+			for (ScoredDocument sd : resultsSub)
 				amis.add(ofy().query(Ami.class)
 						.filter("repository", sd.getId().split("\\+")[0])
 						.filter("imageId", sd.getId().split("\\+")[1]).get());
 		} catch (Exception e) {
 			log.log(Level.WARNING, e.getLocalizedMessage(), e);
 		}
-		return new ListResponse<Ami>(amis.size(), amis);
+		return new ListResponse<Ami>(results.size(), amis);
+	}
+
+	public List<Ami> getAmisBySoftware(String region,
+			List<String> requiredSoftware, int startRow, int size) {
+		List<Ami> amis = new ArrayList<Ami>();
+		Set<Key<Ami>> amiKeys = null;
+		for (String name : requiredSoftware) {
+			Set<Key<Ami>> keys = ofy().query(Software.class)
+					.filter("name", name).fetchParentKeys();
+			if (amiKeys == null)
+				amiKeys = keys;
+			else
+				amiKeys.retainAll(keys);
+		}
+
+		amis.addAll(ofy().get(amiKeys).values());
+		startRow = startRow < amis.size() ? startRow : amis.size();
+		int endRow = startRow + size < amis.size() ? startRow + size : amis
+				.size();
+		amis.subList(startRow, endRow);
+		return amis;
+	}
+
+	public void updateSoftwareNames() {
+		Set<String> softwareNamesSet = new HashSet<String>();
+		Iterator<Software> it = ofy().query(Software.class).prefetchSize(10000)
+				.chunkSize(10000).fetch().iterator();
+		while (it.hasNext()) {
+			Software sw = it.next();
+			softwareNamesSet.add(sw.getName());
+		}
+		for (String name : softwareNamesSet)
+			ofy().put(new SoftwareName(name));
+
+	}
+
+	public List<String> getSoftwareNames() {
+		List<String> result = new ArrayList<String>();
+		Iterator<SoftwareName> it = ofy().query(SoftwareName.class)
+				.prefetchSize(100).chunkSize(100).fetch().iterator();
+		while (it.hasNext()) {
+			SoftwareName sw = it.next();
+			result.add(sw.getName());
+		}
+
+		Collections.sort(result);
+		return result;
+	}
+
+	public void updateSoftwareNames(List<String> names) {
+		Set<String> softwareNamesSet = new HashSet<String>(names);
+		for (String name : softwareNamesSet)
+			ofy().put(new SoftwareName(name));
 	}
 }

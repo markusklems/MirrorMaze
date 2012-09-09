@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.eorganization.crawler.client.gui;
+package de.eorganization.crawler.client.gui.handler;
 
 import de.eorganization.crawler.client.model.Member;
 

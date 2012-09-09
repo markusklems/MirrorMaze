@@ -11,9 +11,9 @@ import com.smartgwt.client.data.DSRequest;
 import com.smartgwt.client.data.DSResponse;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
 
-import de.eorganization.crawler.client.Crawler.Repository;
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
 import de.eorganization.crawler.client.model.Ami;
+import de.eorganization.crawler.client.model.Repository;
 import de.eorganization.crawler.client.services.CrawlerService;
 import de.eorganization.crawler.client.services.CrawlerServiceAsync;
 

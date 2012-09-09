@@ -1,7 +1,6 @@
 package de.eorganization.crawler.client;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -23,14 +22,6 @@ import com.smartgwt.client.widgets.IButton;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.events.ClickEvent;
 import com.smartgwt.client.widgets.events.ClickHandler;
-import com.smartgwt.client.widgets.form.DynamicForm;
-import com.smartgwt.client.widgets.form.fields.ComboBoxItem;
-import com.smartgwt.client.widgets.form.fields.TextItem;
-import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
-import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
-import com.smartgwt.client.widgets.form.fields.events.KeyPressEvent;
-import com.smartgwt.client.widgets.form.fields.events.KeyPressHandler;
-import com.smartgwt.client.widgets.layout.HLayout;
 import com.smartgwt.client.widgets.layout.Layout;
 import com.smartgwt.client.widgets.layout.VLayout;
 import com.smartgwt.client.widgets.tab.Tab;
@@ -40,11 +31,14 @@ import com.smartgwt.client.widgets.tab.events.TabSelectedHandler;
 
 import de.eorganization.crawler.client.gui.AmisTab;
 import de.eorganization.crawler.client.gui.IntrospectionTab;
-import de.eorganization.crawler.client.gui.MemberUpdatedHandler;
+import de.eorganization.crawler.client.gui.SearchLayout;
 import de.eorganization.crawler.client.gui.TopLayout;
 import de.eorganization.crawler.client.gui.canvas.LoginWindow;
 import de.eorganization.crawler.client.gui.canvas.RegisterWindow;
 import de.eorganization.crawler.client.gui.canvas.WelcomeInfoWindow;
+import de.eorganization.crawler.client.gui.handler.AmiCriteriaHandler;
+import de.eorganization.crawler.client.gui.handler.MemberUpdatedHandler;
+import de.eorganization.crawler.client.gui.handler.RefreshHandler;
 import de.eorganization.crawler.client.model.LoginInfo;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.model.UserRole;
@@ -58,38 +52,7 @@ import de.eorganization.crawler.client.services.LoginServiceAsync;
  */
 public class Crawler implements EntryPoint {
 
-	public enum Repository {
-		ALL("all", "all"), US_EAST1("ec2.us-east-1.amazonaws.com", "us-east-1"), US_WEST_1(
-				"ec2.us-west-1.amazonaws.com", "us-west-1"), US_WEST_2(
-				"ec2.us-west-2.amazonaws.com", "us-west-2"), EU_1(
-				"ec2.eu-west-1.amazonaws.com", "eu-west-1"), SOUTH_ASIA_EAST_1(
-				"ec2.ap-southeast-1.amazonaws.com", "ap-southeast-1"), NORTH_ASIA_EAST_1(
-				"ec2.ap-northeast-1.amazonaws.com", "ap-northeast-1"), SOUTH_AMERICA_EAST_1(
-				"ec2.sa-east-1.amazonaws.com", "sa-east-1");
-		final String name;
-		final String shortName;
-
-		Repository(final String name, final String shortName) {
-			this.name = name;
-			this.shortName = shortName;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getShortName() {
-			return shortName;
-		}
-
-		public static Repository findByName(String repository) {
-			for (Repository r : values())
-				if (r.getName().equals(repository))
-					return r;
-			return null;
-		}
-
-	}
+	
 
 	/**
 	 * Create a remote service proxy to talk to the server-side Greeting
@@ -201,7 +164,24 @@ public class Crawler implements EntryPoint {
 		final Layout masterLayout = new VLayout();
 
 		masterLayout.addMember(new TopLayout(loginInfo));
-		masterLayout.addMember(createSearchLayout());
+		masterLayout.addMember(new SearchLayout(new RefreshHandler() {
+
+			@Override
+			public void refresh() {
+				amisTab.refresh();
+			}
+		}, new AmiCriteriaHandler() {
+
+			@Override
+			public void removeCriterion(String name) {
+				amisTab.getCriteria().remove(name);
+			}
+
+			@Override
+			public void putCriterion(String name, Object value) {
+				amisTab.getCriteria().put(name, value);
+			}
+		}));
 		masterLayout.addMember(createTabLayout());
 
 		masterLayout.setWidth100();
@@ -212,91 +192,6 @@ public class Crawler implements EntryPoint {
 		refresh();
 	}
 
-	private Layout createSearchLayout() {
-		HLayout searchLayout = new HLayout();
-		searchLayout.setWidth100();
-		searchLayout.setBackgroundColor("#ffffff");
-		DynamicForm searchForm = new DynamicForm();
-		searchForm.setAutoWidth();
-		final TextItem searchQuery = new TextItem("Search");
-		searchQuery.setWidth(300);
-		searchQuery.setWrapTitle(false);
-		searchQuery.addKeyPressHandler(new KeyPressHandler() {
-
-			@Override
-			public void onKeyPress(KeyPressEvent event) {
-				if ("Enter".equals(event.getKeyName())) {
-					amisTab.getCriteria().put("query",
-							searchQuery.getValueAsString());
-					refresh();
-				}
-
-			}
-		});
-
-		final ComboBoxItem regionFilter = new ComboBoxItem();
-		regionFilter.setWrapTitle(false);
-		regionFilter.setTitle("Select AWS Region");
-		regionFilter
-				.setTooltip("Select of which AWS Region all AMIs are shown");
-		LinkedHashMap<String, String> regions = new LinkedHashMap<String, String>();
-		regions.put("all", "all");
-		for (Repository repo : Repository.values())
-			regions.put(repo.getName(), repo.name());
-		regionFilter.setValueMap(regions);
-		regionFilter.setDefaultValue(Repository.US_EAST1.getName());
-		regionFilter.addChangedHandler(new ChangedHandler() {
-
-			@Override
-			public void onChanged(ChangedEvent event) {
-				try {
-
-					amisTab.getCriteria().put(
-							"region",
-							Repository.valueOf(
-									(String) regionFilter.getDisplayValue())
-									.getName());
-					refresh();
-				} catch (Exception e) {
-				}
-			}
-		});
-		regionFilter.addKeyPressHandler(new KeyPressHandler() {
-
-			@Override
-			public void onKeyPress(KeyPressEvent event) {
-				try {
-					if (event.getKeyName().equals("Enter"))
-						amisTab.getCriteria().put(
-								"region",
-								Repository
-										.valueOf(
-												(String) regionFilter
-														.getDisplayValue())
-										.getName());
-
-					refresh();
-				} catch (Exception e) {
-				}
-			}
-		});
-		searchForm.setFields(searchQuery, regionFilter);
-		IButton searchButton = new IButton("Search", new ClickHandler() {
-
-			@Override
-			public void onClick(ClickEvent event) {
-				amisTab.getCriteria().put("query",
-						searchQuery.getValueAsString());
-				refresh();
-			}
-		});
-
-		searchLayout.addMember(searchForm);
-		searchLayout.addMember(searchButton);
-
-		return searchLayout;
-	}
-
 	private TabSet createTabLayout() {
 		tabs.setWidth100();
 		tabs.setHeight100();
@@ -305,7 +200,9 @@ public class Crawler implements EntryPoint {
 		amisTab = new AmisTab(loginInfo);
 
 		tabs.addTab(amisTab);
-		tabs.addTab(new Tab("Compare AMIs", "[SKINIMG]actions/view.png"));
+		Tab compareTab = new Tab("Compare AMIs", "[SKINIMG]actions/view.png");
+		compareTab.setDisabled(true);
+		tabs.addTab(compareTab);
 		tabs.addTab(new IntrospectionTab());
 		tabs.addTab(createStatisticsTab());
 		if (getMember() != null && UserRole.ADMIN.equals(getMember().getRole()))
@@ -418,7 +315,7 @@ public class Crawler implements EntryPoint {
 														@Override
 														public void onSuccess(
 																Void result) {
-															SC.say("Reset Ami counters.");
+															SC.say("Ami counters reset.");
 														}
 													});
 									}
@@ -426,7 +323,26 @@ public class Crawler implements EntryPoint {
 
 					}
 				});
+		IButton updateSoftwareNamesButton = new IButton("Update Software Names List", new ClickHandler() {
+			
+			@Override
+			public void onClick(ClickEvent event) {
+				crawlerService.updateSoftwareNames(new AsyncCallback<Void>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+						SC.warn("Could not update Software Names List!");
+					}
+
+					@Override
+					public void onSuccess(Void result) {
+						SC.say("Software Names List updated.");
+					}
+				});
+			}
+		});
 		adminLayout.addMember(resetAmiCountersButton);
+		adminLayout.addMember(updateSoftwareNamesButton);
 
 		adminTab.setPane(adminLayout);
 		return adminTab;

@@ -1,5 +1,6 @@
 package de.eorganization.crawler.client.services;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -20,8 +21,8 @@ public interface CrawlerService extends RemoteService {
 
 	public boolean importJSONFromS3(String S3Bucket);
 
-	public ListResponse<Ami> getAmis(String memberId, Map<String, Object> criteria,
-			int startRow, int endRow);
+	public ListResponse<Ami> getAmis(String memberId,
+			Map<String, Object> criteria, int startRow, int endRow);
 
 	public Map<String, Long> getSoftwarePackagesPieData(String region);
 
@@ -39,5 +40,9 @@ public interface CrawlerService extends RemoteService {
 			Map<String, Object> criteria, int startRow, int endRow);
 
 	public Member registerMember(Member member);
+
+	public List<String> getSoftwareNames();
+
+	public void updateSoftwareNames();
 
 }

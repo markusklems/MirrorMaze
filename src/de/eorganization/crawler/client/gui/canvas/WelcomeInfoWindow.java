@@ -15,7 +15,7 @@ import com.smartgwt.client.widgets.form.fields.events.ChangedEvent;
 import com.smartgwt.client.widgets.form.fields.events.ChangedHandler;
 import com.smartgwt.client.widgets.layout.VLayout;
 
-import de.eorganization.crawler.client.gui.MemberUpdatedHandler;
+import de.eorganization.crawler.client.gui.handler.MemberUpdatedHandler;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.services.CrawlerService;
 import de.eorganization.crawler.client.services.CrawlerServiceAsync;

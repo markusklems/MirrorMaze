@@ -85,7 +85,7 @@ public class Software implements Serializable {
 		this.ami = ami;
 		this.name = name;
 		this.version = version;
-		this.attributes = attributes;
+		this.attributes.putAll(attributes);
 	}
 
 	/**

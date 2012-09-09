@@ -51,88 +51,47 @@ public class AmiManager {
 
 	private static MazeDAO dao = new MazeDAO();
 
-	/**
-	 * 
-	 */
-	public AmiManager() {
-		super();
+	public static ListResponse<Ami> findAmis(String memberId, String query,
+			String region, int startRow, int endRow) {
+		int limit = -1;
+		if (!UserRole.ADMIN.equals(getMember(memberId).getRole()))
+			limit = 10;
+
+		return dao.findAmis(memberId, query, region, limit, startRow, endRow);
 	}
 
-	public static boolean saveAmi(String repository, String imageId,
-			String imageLocation, String imageOwnerAlias, String ownerId,
-			String name, String description, String architecture,
-			String platform, String imageType) {
-
-		// Check for duplicate AMIs? TODO
-
-		return dao.createAmi(repository, imageId, imageLocation,
-				imageOwnerAlias, ownerId, name, description, architecture,
-				platform, imageType);
+	public static Member findMemberByFilter(Map<String, Object> filter) {
+		return dao.findMemberByFilter(filter);
 	}
 
-	public static Ami saveOrGetAmi(String repository, String imageId,
-			String imageLocation, String imageOwnerAlias, String ownerId,
-			String name, String description, String architecture,
-			String platform, String imageType) {
-
-		// Check for duplicate AMIs? TODO
-		return dao.getOrCreateAmi(null, repository, imageId, imageLocation,
-				imageOwnerAlias, ownerId, name, description, architecture,
-				platform, imageType);
+	public static Member findMemberBySocialId(String socialId) {
+		return dao.findMemberBySocialId(socialId);
 	}
 
-	public static Software saveSoftware(String amiId, String repository,
-			String name, String version) {
-		Software newSoftware = null;
-		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
-
-		if (amiKey != null)
-			newSoftware = dao.getOrCreateSoftware(null, amiKey, name, version);
-
-		return newSoftware;
+	public static long getAmiCount(String region) {
+		return dao.getAmiCount(region);
 	}
 
-	public static Software saveSoftware(String amiId, String repository,
-			String name, String version, Map<String, String> attributes) {
-		Software newSoftware = null;
-		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
-
-		if (amiKey != null)
-			newSoftware = dao.getOrCreateSoftware(null, amiKey, name, version,
-					attributes);
-
-		return newSoftware;
+	public static ShardedCounter getAmiCounter(String region) {
+		return dao.getAmiCounter(region);
 	}
 
-	public static void updateSoftware(Software software) {
-		dao.updateSoftware(software);
-	}
+	public static Map<String, Long> getAmiOwnersPieData(String region) {
+		Map<String, Long> ownerCount = new LinkedHashMap<String, Long>();
+		QueryResultIterator<Ami> iterator = dao.ofy().query(Ami.class)
+				.filter("repository", region).chunkSize(10000).fetch()
+				.iterator();
 
-	public static Language saveLanguage(String amiId, String repository,
-			String name, String version) {
-		Language newLanguage = null;
-		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
+		while (iterator.hasNext()) {
+			Ami a = iterator.next();
 
-		if (amiKey != null)
-			newLanguage = dao.getOrCreateLanguage(null, amiKey, name, version);
+			ownerCount.put(
+					a.getOwnerId(),
+					ownerCount.get(a.getOwnerId()) != null ? ownerCount.get(a
+							.getOwnerId()) + 1 : 1);
+		}
 
-		return newLanguage;
-	}
-
-	public static Language saveLanguage(String amiId, String repository,
-			String name, String version, Map<String, String> attributes) {
-		Language newLanguage = null;
-		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
-
-		if (amiKey != null)
-			newLanguage = dao.getOrCreateLanguage(null, amiKey, name, version,
-					attributes);
-
-		return newLanguage;
-	}
-
-	public static void updateLanguage(Language language) {
-		dao.updateLanguage(language);
+		return ownerCount;
 	}
 
 	public static ListResponse<Ami> getAmis() {
@@ -141,10 +100,6 @@ public class AmiManager {
 
 	public static ListResponse<Ami> getAmis(String memberId) {
 		return getAmis(memberId, "all", 0, -1);
-	}
-
-	public static ListResponse<Ami> getAmis(String memberId, String region) {
-		return getAmis(memberId, region, 0, -1);
 	}
 
 	public static ListResponse<Ami> getAmis(String memberId,
@@ -159,16 +114,11 @@ public class AmiManager {
 		String query = (String) criteria.get("query");
 		if (query == null)
 			return getAmis(memberId, region, startRow, endRow);
-		return findAmis(memberId, query, region);
+		return findAmis(memberId, query, region, startRow, endRow);
 	}
 
-	public static ListResponse<Ami> findAmis(String memberId, String query,
-			String region) {
-		int limit = -1;
-		if (!UserRole.ADMIN.equals(getMember(memberId).getRole()))
-			limit = 10;
-
-		return dao.findAmis(memberId, query, region, limit);
+	public static ListResponse<Ami> getAmis(String memberId, String region) {
+		return getAmis(memberId, region, 0, -1);
 	}
 
 	public static ListResponse<Ami> getAmis(String memberId, String region,
@@ -197,22 +147,100 @@ public class AmiManager {
 		}
 	}
 
-	public static Map<String, Long> getAmiOwnersPieData(String region) {
-		Map<String, Long> ownerCount = new LinkedHashMap<String, Long>();
-		QueryResultIterator<Ami> iterator = dao.ofy().query(Ami.class)
-				.filter("repository", region).chunkSize(10000).fetch()
-				.iterator();
+	public static ListResponse<Ami> getAmisBySoftware(String memberId,
+			String region, List<String> requiredSoftware, int startRow,
+			int endRow) {
+		List<Ami> amis = null;
 
-		while (iterator.hasNext()) {
-			Ami a = iterator.next();
+		int size = endRow - startRow > -1 ? endRow - startRow : 0;
+		if (size > 0)
+			amis = dao.getAmisBySoftware(region, requiredSoftware, startRow,
+					size);
+		return amis != null ? new ListResponse<Ami>(amis.size(), new ArrayList<Ami>(
+				amis)) : new ListResponse<Ami>(0, new ArrayList<Ami>());
+	}
 
-			ownerCount.put(
-					a.getOwnerId(),
-					ownerCount.get(a.getOwnerId()) != null ? ownerCount.get(a
-							.getOwnerId()) + 1 : 1);
+	public static ListResponse<Software> getAmiSoftware(String memberId,
+			Long amiId, Map<String, Object> criteria, int startRow, int endRow) {
+
+		try {
+			log.info("request for Software of Ami " + amiId + " from "
+					+ startRow + " to " + endRow);
+
+			List<Software> software = null;
+
+			long total = getNumberAmiSoftware(memberId, amiId);
+			endRow = endRow > total ? new Long(total).intValue() : endRow;
+			int size = endRow - startRow > -1 ? endRow - startRow : 0;
+			if (size > 0)
+				software = dao.getAmiSoftware(amiId, startRow, size);
+
+			log.info("fetched Software for Ami " + amiId + " # " + size
+					+ " from a total of " + total + " records.");
+
+			return software != null ? new ListResponse<Software>(total,
+					new ArrayList<Software>(software))
+					: new ListResponse<Software>(0, new ArrayList<Software>());
+		} catch (Exception e) {
+			return new ListResponse<Software>(0, new ArrayList<Software>());
 		}
 
-		return ownerCount;
+	}
+
+	public static Member getMember(String memberId) {
+		if (memberId == UserRole.ADMIN.getDefaultMemberId())
+			return new Member("", UserRole.ADMIN);
+		try {
+			return memberId != null ? dao.ofy().get(Member.class, memberId)
+					: null;
+		} catch (NotFoundException e) {
+			log.log(Level.WARNING, e.getLocalizedMessage(), e);
+			return null;
+		}
+	}
+
+	public static long getNumberAmis(String memberId,
+			Map<String, Object> criteria) {
+		String region = (String) criteria.get("region");
+		String query = (String) criteria.get("query");
+		return getNumberAmis(memberId, region, query);
+	}
+
+	public static long getNumberAmis(String memberId, String region,
+			String query) {
+
+		if (getMember(memberId) == null
+				|| getMember(memberId).getRole() == UserRole.USER)
+			return 10;
+
+		try {
+
+			if (query == null)
+				return dao.getNumberAmis(region);
+
+			SearchService ss = SearchServiceFactory.getSearchService();
+			Index idx = ss.getIndex(IndexSpec.newBuilder().setName("amiIndex")
+					.build());
+			Results<ScoredDocument> results = idx.search(Query
+					.newBuilder()
+					.setOptions(
+							QueryOptions.newBuilder().setReturningIdsOnly(true)
+									.build()).build(query));
+
+			return results.getNumberReturned();
+
+		} catch (Exception e) {
+			return 0;
+		}
+
+	}
+
+	private static long getNumberAmiSoftware(String memberId, Long amiId) {
+		if (getMember(memberId) == null
+				|| getMember(memberId).getRole() == UserRole.USER)
+			return 10;
+
+		return dao.getNumberAmiSoftware(amiId);
 	}
 
 	public static Map<String, Long> getSoftwarePackagesPieData(String region) {
@@ -282,16 +310,62 @@ public class AmiManager {
 		return true;
 	}
 
-	public static Member getMember(String memberId) {
-		if (memberId == UserRole.ADMIN.getDefaultMemberId())
-			return new Member("", UserRole.ADMIN);
-		try {
-			return memberId != null ? dao.ofy().get(Member.class, memberId)
-					: null;
-		} catch (NotFoundException e) {
-			log.log(Level.WARNING, e.getLocalizedMessage(), e);
-			return null;
-		}
+	public static Member registerMember(Member member) {
+		return dao.registerMember(member);
+	}
+
+	public static void resetAmiCounters() {
+		Queue queue = QueueFactory.getQueue("ami-crawler-queue");
+		queue.add(withUrl("/crawler/resetCounterAMI").header(
+				"Host",
+				BackendServiceFactory.getBackendService().getBackendAddress(
+						"ami-crawler")));
+	}
+
+	public static boolean saveAmi(String repository, String imageId,
+			String imageLocation, String imageOwnerAlias, String ownerId,
+			String name, String description, String architecture,
+			String platform, String imageType) {
+
+		// Check for duplicate AMIs? TODO
+
+		return dao.createAmi(repository, imageId, imageLocation,
+				imageOwnerAlias, ownerId, name, description, architecture,
+				platform, imageType);
+	}
+
+	public static Language saveLanguage(String amiId, String repository,
+			String name, String version) {
+		Language newLanguage = null;
+		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
+
+		if (amiKey != null)
+			newLanguage = dao.getOrCreateLanguage(null, amiKey, name, version);
+
+		return newLanguage;
+	}
+
+	public static Language saveLanguage(String amiId, String repository,
+			String name, String version, Map<String, String> attributes) {
+		Language newLanguage = null;
+		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
+
+		if (amiKey != null)
+			newLanguage = dao.getOrCreateLanguage(null, amiKey, name, version,
+					attributes);
+
+		return newLanguage;
+	}
+
+	public static Ami saveOrGetAmi(String repository, String imageId,
+			String imageLocation, String imageOwnerAlias, String ownerId,
+			String name, String description, String architecture,
+			String platform, String imageType) {
+
+		// Check for duplicate AMIs? TODO
+		return dao.getOrCreateAmi(null, repository, imageId, imageLocation,
+				imageOwnerAlias, ownerId, name, description, architecture,
+				platform, imageType);
 	}
 
 	public static Member saveOrGetMember(User user) {
@@ -313,107 +387,58 @@ public class AmiManager {
 
 	}
 
-	public static long getNumberAmis(String memberId,
-			Map<String, Object> criteria) {
-		String region = (String) criteria.get("region");
-		String query = (String) criteria.get("query");
-		return getNumberAmis(memberId, region, query);
+	public static Software saveSoftware(String amiId, String repository,
+			String name, String version) {
+		Software newSoftware = null;
+		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
+
+		if (amiKey != null)
+			newSoftware = dao.getOrCreateSoftware(null, amiKey, name, version);
+
+		return newSoftware;
 	}
 
-	public static long getNumberAmis(String memberId, String region,
-			String query) {
+	public static Software saveSoftware(String amiId, String repository,
+			String name, String version, Map<String, String> attributes) {
+		Software newSoftware = null;
+		Key<Ami> amiKey = dao.findAmiByImageIdAndRepository(amiId, repository);
 
-		if (getMember(memberId) == null
-				|| getMember(memberId).getRole() == UserRole.USER)
-			return 10;
+		if (amiKey != null)
+			newSoftware = dao.getOrCreateSoftware(null, amiKey, name, version,
+					attributes);
 
-		try {
+		return newSoftware;
+	}
 
-			if (query == null)
-				return dao.getNumberAmis(region);
-
-			SearchService ss = SearchServiceFactory.getSearchService();
-			Index idx = ss.getIndex(IndexSpec.newBuilder().setName("amiIndex")
-					.build());
-			Results<ScoredDocument> results = idx.search(Query
-					.newBuilder()
-					.setOptions(
-							QueryOptions.newBuilder().setReturningIdsOnly(true)
-									.build()).build(query));
-
-			return results.getNumberReturned();
-
-		} catch (Exception e) {
-			return 0;
-		}
-
+	public static void updateLanguage(Language language) {
+		dao.updateLanguage(language);
 	}
 
 	public static Member updateMember(Member member) {
 		return dao.updateMember(member);
 	}
 
-	public static long getAmiCount(String region) {
-		return dao.getAmiCount(region);
+	public static void updateSoftware(Software software) {
+		dao.updateSoftware(software);
 	}
 
-	public static ShardedCounter getAmiCounter(String region) {
-		return dao.getAmiCounter(region);
+	/**
+	 * 
+	 */
+	public AmiManager() {
+		super();
 	}
 
-	public static void resetAmiCounters() {
-		Queue queue = QueueFactory.getQueue("ami-crawler-queue");
-		queue.add(withUrl("/crawler/resetCounterAMI").header(
-				"Host",
-				BackendServiceFactory.getBackendService().getBackendAddress(
-						"ami-crawler")));
+	public static List<String> getSoftwareNames() {
+		return dao.getSoftwareNames();
 	}
-
-	public static ListResponse<Software> getAmiSoftware(String memberId,
-			Long amiId, Map<String, Object> criteria, int startRow, int endRow) {
-
-		try {
-			log.info("request for Software of Ami " + amiId + " from "
-					+ startRow + " to " + endRow);
-
-			List<Software> software = null;
-
-			long total = getNumberAmiSoftware(memberId, amiId);
-			endRow = endRow > total ? new Long(total).intValue() : endRow;
-			int size = endRow - startRow > -1 ? endRow - startRow : 0;
-			if (size > 0)
-				software = dao.getAmiSoftware(amiId, startRow, size);
-
-			log.info("fetched Software for Ami " + amiId + " # " + size
-					+ " from a total of " + total + " records.");
-
-			return software != null ? new ListResponse<Software>(total,
-					new ArrayList<Software>(software))
-					: new ListResponse<Software>(0, new ArrayList<Software>());
-		} catch (Exception e) {
-			return new ListResponse<Software>(0, new ArrayList<Software>());
-		}
-
+	
+	public static void updateSoftwareNames() {
+		dao.updateSoftwareNames();
 	}
-
-	private static long getNumberAmiSoftware(String memberId, Long amiId) {
-		if (getMember(memberId) == null
-				|| getMember(memberId).getRole() == UserRole.USER)
-			return 10;
-
-		return dao.getNumberAmiSoftware(amiId);
-	}
-
-	public static Member findMemberByFilter(Map<String, Object> filter) {
-		return dao.findMemberByFilter(filter);
-	}
-
-	public static Member findMemberBySocialId(String socialId) {
-		return dao.findMemberBySocialId(socialId);
-	}
-
-	public static Member registerMember(Member member) {
-		return dao.registerMember(member);
+	
+	public static void updateSoftwareNames(List<String> names) {
+		dao.updateSoftwareNames(names);
 	}
 
 }
