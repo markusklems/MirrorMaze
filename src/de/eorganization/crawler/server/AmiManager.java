@@ -32,6 +32,7 @@ import com.google.appengine.api.search.SearchServiceFactory;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.users.User;
+import com.google.common.base.Splitter;
 import com.google.gson.Gson;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
@@ -64,7 +65,7 @@ public class AmiManager {
 		return dao.findMemberByFilter(filter);
 	}
 
-	public static Member findMemberBySocialId(String socialId) {
+	public static Member findMemberBySocialId(String socialId) throws Exception {
 		return dao.findMemberBySocialId(socialId);
 	}
 
@@ -111,10 +112,22 @@ public class AmiManager {
 			Map<String, Object> criteria, int startRow, int endRow) {
 		log.info("getting amis for criteria " + criteria);
 		String region = (String) criteria.get("region");
-		String query = (String) criteria.get("query");
-		if (query == null)
-			return getAmis(memberId, region, startRow, endRow);
-		return findAmis(memberId, query, region, startRow, endRow);
+		if (criteria.get("query") != null) {
+			String query = (String) criteria.get("query");
+			return findAmis(memberId, query, region, startRow, endRow);
+		}
+		if (criteria.get("softwareCriteria") != null) {
+			Splitter splitter = Splitter.on(",");
+			List<String> requiredSoftware = new ArrayList<String>();
+			for (String criterion : splitter.split((String) criteria
+					.get("softwareCriteria")))
+				requiredSoftware.add(criterion);
+			return getAmisBySoftware(memberId, region, requiredSoftware,
+					startRow, endRow);
+		}
+
+		return getAmis(memberId, region, startRow, endRow);
+
 	}
 
 	public static ListResponse<Ami> getAmis(String memberId, String region) {
@@ -150,14 +163,14 @@ public class AmiManager {
 	public static ListResponse<Ami> getAmisBySoftware(String memberId,
 			String region, List<String> requiredSoftware, int startRow,
 			int endRow) {
-		List<Ami> amis = null;
+		ListResponse<Ami> amis = null;
 
 		int size = endRow - startRow > -1 ? endRow - startRow : 0;
 		if (size > 0)
 			amis = dao.getAmisBySoftware(region, requiredSoftware, startRow,
 					size);
-		return amis != null ? new ListResponse<Ami>(amis.size(), new ArrayList<Ami>(
-				amis)) : new ListResponse<Ami>(0, new ArrayList<Ami>());
+		return amis != null ? amis : new ListResponse<Ami>(0,
+				new ArrayList<Ami>());
 	}
 
 	public static ListResponse<Software> getAmiSoftware(String memberId,
@@ -432,11 +445,19 @@ public class AmiManager {
 	public static List<String> getSoftwareNames() {
 		return dao.getSoftwareNames();
 	}
-	
+
 	public static void updateSoftwareNames() {
 		dao.updateSoftwareNames();
 	}
-	
+
+	public static void updateSoftwareNamesViaServlet() {
+		Queue queue = QueueFactory.getQueue("ami-crawler-queue");
+		queue.add(withUrl("/crawler/updateSoftwareNames").header(
+				"Host",
+				BackendServiceFactory.getBackendService().getBackendAddress(
+						"ami-crawler")));
+	}
+
 	public static void updateSoftwareNames(List<String> names) {
 		dao.updateSoftwareNames(names);
 	}

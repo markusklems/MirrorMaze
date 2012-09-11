@@ -20,12 +20,14 @@ import com.google.appengine.api.search.QueryOptions.Builder;
 import com.google.appengine.api.search.ScoredDocument;
 import com.google.appengine.api.search.SearchService;
 import com.google.appengine.api.search.SearchServiceFactory;
+import com.google.apphosting.api.ApiProxy.OverQuotaException;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyOpts;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.Query;
 import com.googlecode.objectify.util.DAOBase;
 
+import de.eorganization.crawler.client.OutOfQuotaException;
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
 import de.eorganization.crawler.client.model.Ami;
 import de.eorganization.crawler.client.model.Language;
@@ -249,8 +251,12 @@ public class MazeDAO extends DAOBase {
 		return query.get();
 	}
 
-	public Member findMemberBySocialId(String socialId) {
-		return ofy().query(Member.class).filter("socialId", socialId).get();
+	public Member findMemberBySocialId(String socialId) throws Exception {
+		try {
+			return ofy().query(Member.class).filter("socialId", socialId).get();
+		} catch (OverQuotaException oqe) {
+			throw new OutOfQuotaException(oqe);
+		}
 	}
 
 	public Member registerMember(Member member) {
@@ -299,7 +305,7 @@ public class MazeDAO extends DAOBase {
 		return new ListResponse<Ami>(results.size(), amis);
 	}
 
-	public List<Ami> getAmisBySoftware(String region,
+	public ListResponse<Ami> getAmisBySoftware(String region,
 			List<String> requiredSoftware, int startRow, int size) {
 		List<Ami> amis = new ArrayList<Ami>();
 		Set<Key<Ami>> amiKeys = null;
@@ -316,8 +322,8 @@ public class MazeDAO extends DAOBase {
 		startRow = startRow < amis.size() ? startRow : amis.size();
 		int endRow = startRow + size < amis.size() ? startRow + size : amis
 				.size();
-		amis.subList(startRow, endRow);
-		return amis;
+		List<Ami> amisSub = new ArrayList<Ami>(amis.subList(startRow, endRow));
+		return new ListResponse<Ami>(amis.size(), amisSub);
 	}
 
 	public void updateSoftwareNames() {

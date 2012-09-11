@@ -36,7 +36,7 @@ public class CrawlerServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public ListResponse<Ami> getAmis(String memberId,
-			Map<String, Object> criteria, int startRow, int endRow) {
+			Map<String, Object> criteria, int startRow, int endRow) throws Exception {
 		log.info("getAmis with " + memberId + ", " + criteria + ", " + startRow
 				+ ", " + endRow);
 		return AmiManager.getAmis(memberId, criteria, startRow, endRow);
@@ -92,7 +92,7 @@ public class CrawlerServiceImpl extends RemoteServiceServlet implements
 
 	@Override
 	public void updateSoftwareNames() {
-		AmiManager.updateSoftwareNames();
+		AmiManager.updateSoftwareNamesViaServlet();
 	}
 
 }

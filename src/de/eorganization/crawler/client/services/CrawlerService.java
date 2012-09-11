@@ -22,7 +22,7 @@ public interface CrawlerService extends RemoteService {
 	public boolean importJSONFromS3(String S3Bucket);
 
 	public ListResponse<Ami> getAmis(String memberId,
-			Map<String, Object> criteria, int startRow, int endRow);
+			Map<String, Object> criteria, int startRow, int endRow) throws Exception;
 
 	public Map<String, Long> getSoftwarePackagesPieData(String region);
 

@@ -1,5 +1,6 @@
 package de.eorganization.crawler.client.datasources;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -9,6 +10,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.smartgwt.client.data.DSRequest;
 import com.smartgwt.client.data.DSResponse;
+import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.grid.ListGridRecord;
 
 import de.eorganization.crawler.client.datasources.responseModel.ListResponse;
@@ -23,7 +25,7 @@ public class AmisDataSource extends GwtRpcDataSource {
 
 	private String memberId;
 
-	private Map<String, Object> criteria;
+	private Map<String, Object> criteria = new HashMap<String, Object>();
 
 	/**
 	 * @param region
@@ -31,7 +33,7 @@ public class AmisDataSource extends GwtRpcDataSource {
 	public AmisDataSource(String memberId, Map<String, Object> criteria) {
 		super();
 		this.memberId = memberId;
-		this.criteria = criteria;
+		this.criteria.putAll(criteria);
 	}
 
 	public ListGridRecord[] createListGridRecords(List<Ami> amis) {
@@ -77,6 +79,7 @@ public class AmisDataSource extends GwtRpcDataSource {
 		int end = request.getEndRow() != null ? request.getEndRow().intValue()
 				: 0;
 
+		log.info("retrieving amis...");
 		mirrorMazeService.getAmis(memberId, criteria, start, end,
 				new AsyncCallback<ListResponse<Ami>>() {
 
@@ -93,6 +96,7 @@ public class AmisDataSource extends GwtRpcDataSource {
 					public void onFailure(Throwable caught) {
 						log.log(Level.WARNING, caught.getLocalizedMessage(),
 								caught);
+						SC.warn("error retrieving AMIs " + caught.getLocalizedMessage());
 					}
 				});
 	}

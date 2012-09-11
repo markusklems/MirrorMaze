@@ -102,6 +102,15 @@
 		<servlet-name>AMICounterResetServlet</servlet-name>
 		<url-pattern>/crawler/resetCounterAMI</url-pattern>
 	</servlet-mapping>
+	<servlet>
+		<servlet-name>SoftwareNamesUpdateServlet</servlet-name>
+		<servlet-class>de.eorganization.crawler.server.servlets.SoftwareNamesUpdateServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SoftwareNamesUpdateServlet</servlet-name>
+		<url-pattern>/crawler/updateSoftwareNames</url-pattern>
+	</servlet-mapping>
+
 
 	<servlet>
 		<servlet-name>RemoteApi</servlet-name>

@@ -2,6 +2,8 @@
 <module rename-to='crawler'>
 	<!-- Inherit the core Web Toolkit stuff. -->
 	<inherits name='com.google.gwt.user.User' />
+	<!-- <inherits name="com.google.gwt.logging.Logging" /> -->
+	<inherits name="com.google.common.base.Base" />
 
 	<!-- Inherit the default GWT style sheet. You can change -->
 	<!-- the theme of your GWT application by uncommenting -->

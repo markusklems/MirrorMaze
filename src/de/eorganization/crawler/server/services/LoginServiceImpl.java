@@ -16,8 +16,10 @@ import org.scribe.oauth.OAuthService;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.apphosting.api.ApiProxy.OverQuotaException;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+import de.eorganization.crawler.client.OutOfQuotaException;
 import de.eorganization.crawler.client.model.LoginInfo;
 import de.eorganization.crawler.client.model.Member;
 import de.eorganization.crawler.client.services.LoginService;
@@ -76,7 +78,7 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 	private UserService userService = UserServiceFactory.getUserService();
 
 	@Override
-	public LoginInfo login(String requestUri) {
+	public LoginInfo login(String requestUri) throws Exception {
 		LoginInfo loginInfo = new LoginInfo();
 		loginInfo.setLoggedIn(false);
 		loginInfo.setLoginUrl(userService.createLoginURL(requestUri));
@@ -258,6 +260,9 @@ public class LoginServiceImpl extends RemoteServiceServlet implements
 				loginInfo.setLogoutUrl("/logout/oauth");
 				log.info("Set loginInfo to " + loginInfo);
 				return loginInfo;
+			} catch (OverQuotaException oqe) {
+				log.log(Level.WARNING, oqe.getLocalizedMessage(), oqe);
+				throw new OutOfQuotaException("Out of Quota!", oqe);
 			} catch (Exception e) {
 				log.log(Level.WARNING, e.getLocalizedMessage(), e);
 			}

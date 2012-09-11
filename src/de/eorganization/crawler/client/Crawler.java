@@ -52,8 +52,6 @@ import de.eorganization.crawler.client.services.LoginServiceAsync;
  */
 public class Crawler implements EntryPoint {
 
-	
-
 	/**
 	 * Create a remote service proxy to talk to the server-side Greeting
 	 * service.
@@ -89,6 +87,14 @@ public class Crawler implements EntryPoint {
 		loginService.login(GWT.getHostPageBaseURL(),
 				new AsyncCallback<LoginInfo>() {
 					public void onFailure(Throwable error) {
+						DOM.setStyleAttribute(RootPanel.get("loading")
+								.getElement(), "display", "none");
+
+						if (error instanceof OutOfQuotaException)
+							SC.warn("Sorry! We are out of quota. Please donate or purchase a premium account to support our work and avoid over quota outages.");
+						else
+							SC.warn("Sorry! We are having technical diffculties.<br/>"
+									+ "Error: " + error.getLocalizedMessage());
 					}
 
 					public void onSuccess(LoginInfo result) {
@@ -323,24 +329,40 @@ public class Crawler implements EntryPoint {
 
 					}
 				});
-		IButton updateSoftwareNamesButton = new IButton("Update Software Names List", new ClickHandler() {
-			
-			@Override
-			public void onClick(ClickEvent event) {
-				crawlerService.updateSoftwareNames(new AsyncCallback<Void>() {
+		resetAmiCountersButton.setAutoWidth();
+
+		IButton updateSoftwareNamesButton = new IButton(
+				"Update Software Names List", new ClickHandler() {
 
 					@Override
-					public void onFailure(Throwable caught) {
-						SC.warn("Could not update Software Names List!");
-					}
+					public void onClick(ClickEvent event) {
+						SC.confirm(
+								"Are you sure? Updating Software Names is database operation intensive and might affect billing!",
+								new BooleanCallback() {
 
-					@Override
-					public void onSuccess(Void result) {
-						SC.say("Software Names List updated.");
+									@Override
+									public void execute(Boolean value) {
+										crawlerService
+												.updateSoftwareNames(new AsyncCallback<Void>() {
+
+													@Override
+													public void onFailure(
+															Throwable caught) {
+														SC.warn("Could not update Software Names List!");
+													}
+
+													@Override
+													public void onSuccess(
+															Void result) {
+														SC.say("Software Names List updated.");
+													}
+												});
+									}
+								});
 					}
 				});
-			}
-		});
+		updateSoftwareNamesButton.setAutoWidth();
+
 		adminLayout.addMember(resetAmiCountersButton);
 		adminLayout.addMember(updateSoftwareNamesButton);
 

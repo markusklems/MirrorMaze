@@ -3,6 +3,7 @@
  */
 package de.eorganization.crawler.client.gui;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,10 +11,12 @@ import java.util.Set;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.smartgwt.client.data.Criteria;
 import com.smartgwt.client.data.Record;
 import com.smartgwt.client.types.ListGridFieldType;
 import com.smartgwt.client.types.RecordComponentPoolingMode;
 import com.smartgwt.client.types.SummaryFunctionType;
+import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.Label;
 import com.smartgwt.client.widgets.grid.ListGrid;
@@ -170,6 +173,9 @@ public class AmisTab extends Tab {
 	}
 
 	public void refresh() {
+		getAmis().setCriteria(
+				new Criteria("criteria" + new Date().getTime(), getCriteria()
+						.toString()));
 		getAmis().invalidateCache();
 		if (getAmis().willFetchData(getAmis().getCriteria()))
 			getAmis().fetchData();
@@ -180,7 +186,7 @@ public class AmisTab extends Tab {
 
 					@Override
 					public void onFailure(Throwable caught) {
-
+						SC.warn("error " + caught.getLocalizedMessage());
 					}
 
 					@Override

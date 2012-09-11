@@ -9,6 +9,6 @@ import de.eorganization.crawler.client.model.LoginInfo;
 @RemoteServiceRelativePath("loginService")
 public interface LoginService extends RemoteService {
 
-	public LoginInfo login(String requestUri);
+	public LoginInfo login(String requestUri) throws Exception;
 
 }
