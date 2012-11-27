@@ -19,6 +19,8 @@ import com.smartgwt.client.types.SummaryFunctionType;
 import com.smartgwt.client.util.SC;
 import com.smartgwt.client.widgets.Canvas;
 import com.smartgwt.client.widgets.Label;
+import com.smartgwt.client.widgets.events.DoubleClickEvent;
+import com.smartgwt.client.widgets.events.DoubleClickHandler;
 import com.smartgwt.client.widgets.grid.ListGrid;
 import com.smartgwt.client.widgets.grid.ListGridField;
 import com.smartgwt.client.widgets.grid.SummaryFunction;
@@ -94,7 +96,7 @@ public class AmisTab extends Tab {
 		ListGridField description = new ListGridField("description",
 				"Description");
 		description.setType(ListGridFieldType.TEXT);
-		description.setCanEdit(true);
+		// description.setCanEdit(true);
 		ListGridField executeLink = new ListGridField("executeLink", "Launch");
 		executeLink.setType(ListGridFieldType.LINK);
 		executeLink.setLinkText(Canvas.imgHTML("[SKINIMG]actions/forward.png",
@@ -111,11 +113,21 @@ public class AmisTab extends Tab {
 		getAmis().setRecordComponentPoolingMode(
 				RecordComponentPoolingMode.RECYCLE);
 		getAmis().setDataPageSize(10);
+		/*getAmis().addDoubleClickHandler(new DoubleClickHandler() {
+
+			@Override
+			public void onDoubleClick(DoubleClickEvent event) {
+				new AmiSoftwareDetailsWindow(loginInfo.getMember(), getAmis()
+						.getSelectedRecord().getAttributeAsLong("id")).show();
+
+			}
+		});*/
 		getAmis().addRecordDoubleClickHandler(new RecordDoubleClickHandler() {
 
 			@Override
 			public void onRecordDoubleClick(RecordDoubleClickEvent event) {
-				if (event.isLeftButtonDown()) {
+				
+				if (event.isLeftButtonDown()) {					
 					new AmiSoftwareDetailsWindow(loginInfo.getMember(), event
 							.getRecord().getAttributeAsLong("id")).show();
 				}

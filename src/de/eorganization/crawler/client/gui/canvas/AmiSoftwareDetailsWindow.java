@@ -51,7 +51,7 @@ public class AmiSoftwareDetailsWindow extends Window {
 		ListGridField name = new ListGridField("name", "Name");
 		ListGridField version = new ListGridField("version", "Version");
 		softwareGrid.setFields(id, name, version);
-		softwareGrid.setDataSource(new AmiSoftwareDataSource(member.getEmail(),
+		softwareGrid.setDataSource(new AmiSoftwareDataSource(member != null ? member.getEmail() : null,
 				amiId));
 		softwareGrid.setWidth100();
 		softwareGrid.setHeight100();

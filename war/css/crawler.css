@@ -37,5 +37,7 @@ body {
 
 .welcome {
 	text-align: justify; 
-	text-justify: newspaper
+	text-justify: newspaper;
+	margin-left: 30px;
+	margin-right: 30px;
 }
