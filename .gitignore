@@ -22,3 +22,4 @@ war/WEB-INF/classes/
 bin
 .project
 .classpath
+AwsCredentials.properties
